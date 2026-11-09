@@ -9,7 +9,7 @@ from app.auth import get_db, require_gesellschafter
 from app.models import Role, User
 from app.schemas import UserCreate, UserOut, UserPatch
 
-log = logging.getLogger("hub.users")
+log = logging.getLogger("base.users")
 router = APIRouter(prefix="/users", dependencies=[Depends(require_gesellschafter)])
 
 

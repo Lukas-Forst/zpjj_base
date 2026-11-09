@@ -10,7 +10,7 @@ export type MeState =
   | { status: "forbidden" }
   | { status: "offline" };
 
-const KEY = "hub.me";
+const KEY = "base.me";
 const read = (): Me | null => {
   try { return JSON.parse(localStorage.getItem(KEY) ?? "null"); } catch { return null; }
 };

@@ -1,10 +1,10 @@
-app = "zpjj-hub-api"
+app = "zpjj-base-api"
 primary_region = "fra"
 
 [build]
 
 [mounts]
-  source = "hub_data"
+  source = "base_data"
   destination = "/data"
   snapshot_retention = 14   # daily snapshots
 

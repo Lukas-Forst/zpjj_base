@@ -13,7 +13,7 @@ from app.db import make_engine, make_session_factory
 from app.models import Role, User
 from app.routers import me, presets, slots, users
 
-log = logging.getLogger("hub")
+log = logging.getLogger("base")
 
 
 def bootstrap_admins(session_factory, emails) -> None:
@@ -38,7 +38,7 @@ def create_app(settings: Settings | None = None, jwks: JWKSCache | None = None) 
         bootstrap_admins(app.state.session_factory, settings.bootstrap_admin_emails)
         yield
 
-    app = FastAPI(title="ZPJJ Hub API", lifespan=lifespan, docs_url=None, redoc_url=None)
+    app = FastAPI(title="ZPJJ Base API", lifespan=lifespan, docs_url=None, redoc_url=None)
     app.state.settings = settings
     app.state.session_factory = make_session_factory(make_engine(settings.database_url))
     app.state.jwks = jwks or JWKSCache(
@@ -47,9 +47,9 @@ def create_app(settings: Settings | None = None, jwks: JWKSCache | None = None) 
 
     @app.middleware("http")
     async def security(request: Request, call_next):
-        secret = settings.hub_proxy_secret
+        secret = settings.base_proxy_secret
         if secret and request.url.path != "/healthz" and not hmac.compare_digest(
-            request.headers.get("X-Hub-Proxy-Secret", ""), secret
+            request.headers.get("X-Base-Proxy-Secret", ""), secret
         ):
             resp = JSONResponse({"detail": "Forbidden"}, status_code=403)
         else:

@@ -22,7 +22,7 @@ export function Forbidden() {
 export function Offline() {
   return (
     <Page title="Du bist offline">
-      <p>Keine Verbindung zum Hub. Der Gym-Timer funktioniert trotzdem, sobald er einmal geladen wurde.</p>
+      <p>Keine Verbindung zu ZPJJ Base. Der Gym-Timer funktioniert trotzdem, sobald er einmal geladen wurde.</p>
       <button className="rounded-lg bg-accent px-4 py-3 text-accent-foreground" onClick={() => location.reload()}>
         Neu laden
       </button>

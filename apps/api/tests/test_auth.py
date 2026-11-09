@@ -80,10 +80,10 @@ def test_dev_bypass_works_in_dev(add_user):
 
 
 def test_proxy_secret(key, add_user):
-    app = create_app(Settings(env="dev", database_url="sqlite://", hub_proxy_secret="s3"))
+    app = create_app(Settings(env="dev", database_url="sqlite://", base_proxy_secret="s3"))
     c = TestClient(app)
     assert c.get("/api/me").status_code == 403
-    assert c.get("/api/me", headers={"X-Hub-Proxy-Secret": "s3"}).status_code == 401
+    assert c.get("/api/me", headers={"X-Base-Proxy-Secret": "s3"}).status_code == 401
     assert c.get("/healthz").status_code == 200
 
 

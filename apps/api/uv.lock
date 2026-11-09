@@ -1135,7 +1135,7 @@ wheels = [
 ]
 
 [[package]]
-name = "zpjj-hub-api"
+name = "zpjj-base-api"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

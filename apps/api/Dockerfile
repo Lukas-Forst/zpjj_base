@@ -4,6 +4,6 @@ WORKDIR /srv
 COPY pyproject.toml uv.lock .python-version ./
 RUN uv sync --frozen --no-dev
 COPY . .
-ENV PATH="/srv/.venv/bin:$PATH" ENV=prod DATABASE_URL=sqlite:////data/hub.db
+ENV PATH="/srv/.venv/bin:$PATH" ENV=prod DATABASE_URL=sqlite:////data/base.db
 EXPOSE 8080
 CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app_factory --factory --host 0.0.0.0 --port 8080 --proxy-headers --forwarded-allow-ips='*'"]

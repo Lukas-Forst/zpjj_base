@@ -1,7 +1,7 @@
 // Minimal app-shell service worker. Network-first for same-origin GETs (never /api), cache fallback.
 // On install the shell pages are fetched and their /_next/static assets cached, so the
 // start screen and /timer/ work offline after the first load.
-const CACHE = "hub-v1";
+const CACHE = "base-v1";
 const SHELL = ["/", "/timer/", "/stundenplan/", "/offline/"];
 
 self.addEventListener("install", (event) => {

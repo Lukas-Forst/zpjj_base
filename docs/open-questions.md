@@ -7,3 +7,4 @@
 - Cloudflare-Team-Domain und AUD-Tag (manuell, siehe `deploy.md`).
 - HeroUI v3 hat keine `Navbar`-Komponente: die Kopfzeile ist eigener Markup plus `Drawer` (Entscheidung, siehe Kurzbericht).
 - Konto-Button ist vorerst ein deaktivierter Namens-Button (kein Logout bei Cloudflare Access ohne Team-Domain-URL): Logout-Link `https://<team>.cloudflareaccess.com/cdn-cgi/access/logout` ergänzen, sobald bekannt.
+- Umbenennung: Die App heißt jetzt **ZPJJ Base** (vorher "ZPJJ Hub", wegen Assoziation mit 18+-Seiten). Domain ist `base.zpjj.de`, Fly-App `zpjj-base-api`, Pages-Projekt `zpjj-base`. Das Repo-Verzeichnis und der Prompt `docs/m0_promptplan.md` tragen noch den alten Namen (Prompt bleibt als Historie unverändert).

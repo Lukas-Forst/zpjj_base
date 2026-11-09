@@ -12,4 +12,4 @@ export function save(key: string, value: unknown): void {
   try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* storage unavailable */ }
 }
 
-export const KEYS = { last: "hub.timer.last", presets: "hub.timer.presets", audio: "hub.timer.audio" } as const;
+export const KEYS = { last: "base.timer.last", presets: "base.timer.presets", audio: "base.timer.audio" } as const;

@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.models import Role, User
 
-log = logging.getLogger("hub.auth")
+log = logging.getLogger("base.auth")
 
 JWKS_TTL = 3600
 JWKS_MIN_REFRESH = 30  # seconds between refreshes triggered by unknown kids
