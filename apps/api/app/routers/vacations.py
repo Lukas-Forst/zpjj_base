@@ -1,3 +1,4 @@
+import logging
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
@@ -9,6 +10,7 @@ from app.dates import today_berlin
 from app.models import Role, User, Vacation, VacationSource
 from app.schemas import VacationIn, VacationOut
 
+log = logging.getLogger("base.vacations")
 router = APIRouter(prefix="/vacations")
 PAST = "Vergangenen Urlaub kann nur ein Gesellschafter ändern."
 
@@ -21,7 +23,10 @@ def _out(v: Vacation) -> VacationOut:
 def changed(request: Request) -> None:
     hook = getattr(request.app.state, "on_vacation_change", None)
     if hook:
-        hook()
+        try:
+            hook()
+        except Exception:  # the vacation is already saved: never fail the request
+            log.exception("calendar sync trigger failed")
 
 
 @router.get("", response_model=list[VacationOut])
@@ -72,6 +77,8 @@ def delete(vacation_id: int, request: Request, user: User = Depends(current_user
         raise HTTPException(403, "Du darfst nur deinen eigenen Urlaub löschen.")
     if v.end_date < today_berlin() and not is_boss:
         raise HTTPException(403, PAST)
+    if v.source == VacationSource.calendar:
+        raise HTTPException(409, "Dieser Eintrag kommt aus dem Kalender. Bitte dort löschen.")
     db.delete(v)
     db.commit()
     changed(request)

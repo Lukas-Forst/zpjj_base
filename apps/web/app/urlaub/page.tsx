@@ -48,7 +48,7 @@ function Urlaub() {
     act(api.POST("/api/vacations", { body: { start_date: from, end_date: to || from, user_id: who === "" ? null : who } }));
     setFrom(""); setTo("");
   };
-  const mayDelete = (v: Vac) => boss || v.user_id === me.id;
+  const mayDelete = (v: Vac) => v.source === "base" && (boss || v.user_id === me.id);
   const myDay = (g: Gap) => vacs.some((v) => v.user_id === me.id && v.start_date <= g.date && g.date <= v.end_date);
 
   return (

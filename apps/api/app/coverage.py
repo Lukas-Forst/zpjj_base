@@ -27,7 +27,7 @@ def compute_gaps(slots: Sequence, vacations: Sequence, substitutes: Sequence, to
             absent = tuple(t for t in trainers if t in off)
             if not absent:
                 continue
-            if any(x.slot_id == s.id and x.date == d for x in substitutes):
+            if any(x.slot_id == s.id and x.date == d and x.user_id not in off for x in substitutes):
                 continue
             level = "unbesetzt" if len(absent) == len(trainers) else "teilweise"
             gaps.append(Gap(d, s.id, level, absent))

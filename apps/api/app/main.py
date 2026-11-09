@@ -51,7 +51,10 @@ def create_app(settings: Settings | None = None, jwks: JWKSCache | None = None) 
 
     async def sync_loop():
         while True:
-            await asyncio.to_thread(run_sync)
+            try:
+                await asyncio.to_thread(run_sync)
+            except Exception:  # keep the loop alive
+                log.exception("sync loop iteration failed")
             await asyncio.sleep(15 * 60)
 
     @asynccontextmanager

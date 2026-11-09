@@ -74,3 +74,9 @@ def test_window_is_28_days():
     mo = slot([u(1)], weekday=1)
     assert compute_gaps([mo], [vac(1, outside, outside)], [], TODAY) == []
     assert len(compute_gaps([mo], [vac(1, inside, inside)], [], TODAY)) == 1
+
+
+def test_substitute_who_is_on_vacation_does_not_count():
+    s = NS(slot_id=1, date=DI, user_id=3)
+    g = compute_gaps([slot([u(1)])], [vac(1, DI, DI), vac(3, DI, DI)], [s], TODAY)
+    assert [x.level for x in g] == ["unbesetzt"]

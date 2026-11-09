@@ -89,3 +89,23 @@ def test_past_delete_forbidden_for_trainer(client, boss, tim, add_user):
 
 def test_requires_login(client):
     assert client.get("/api/vacations").status_code in (401, 403)
+
+
+def test_calendar_entry_cannot_be_deleted_in_base(app, client, boss, add_user):
+    from app.models import Vacation, VacationSource
+    uid = add_user("c@example.com")
+    with app.state.session_factory() as db:
+        v = Vacation(user_id=uid, start_date=T + timedelta(days=3), end_date=T + timedelta(days=4),
+                     source=VacationSource.calendar, gcal_event_id="g1")
+        db.add(v)
+        db.commit()
+        vid = v.id
+    r = client.delete(f"/api/vacations/{vid}", headers=boss)
+    assert r.status_code == 409 and "Kalender" in r.json()["detail"]
+
+
+def test_sync_hook_failure_never_fails_the_request(app, client, tim):
+    def boom():
+        raise RuntimeError("db locked")
+    app.state.on_vacation_change = boom
+    assert post(client, tim, d(3), d(4)).status_code == 201

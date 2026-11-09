@@ -227,3 +227,37 @@ def test_google_client_http_contract():
     assert body["extendedProperties"]["private"]["base_id"] == "7"
     cal.delete("gone")  # 410 is fine
     assert sum(1 for m, p, _ in seen if p == "/token") == 1  # token cached
+
+
+def test_imported_vacation_survives_when_title_becomes_ambiguous(db, cal):
+    mk_user(db, "Tim", "a@example.com")
+    cal.add_manual("Tim Urlaub", D1, D2)
+    sync(db, cal, TODAY, NOW)
+    assert len(vacs(db)) == 1
+    mk_user(db, "Tim B", "b@example.com")  # now ambiguous, event still exists
+    sync(db, cal, TODAY, NOW)
+    assert len(vacs(db)) == 1
+    assert db.get(SyncState, 1).unmatched == ["Tim Urlaub"]
+
+
+def test_reused_row_id_does_not_adopt_foreign_event(db, cal):
+    nico, can = mk_user(db, "Nico"), mk_user(db, "Can")
+    v = mk_vac(db, nico)
+    sync(db, cal, TODAY, NOW)
+    vid = v.id
+    db.delete(v)
+    db.commit()
+    db.add(Vacation(id=vid, user_id=can.id, start_date=D1, end_date=D2,
+                    source=VacationSource.base))
+    db.commit()
+    sync(db, cal, TODAY, NOW)
+    assert [e.title for e in cal.events.values()] == ["Can Urlaub"]
+
+
+def test_hand_edited_title_is_restored(db, cal):
+    mk_vac(db, mk_user(db, "Tim"))
+    sync(db, cal, TODAY, NOW)
+    eid = next(iter(cal.events))
+    cal.events[eid].title = "Tim im Urlaub"
+    sync(db, cal, TODAY, NOW)
+    assert [e.title for e in cal.events.values()] == ["Tim Urlaub"]
