@@ -43,11 +43,9 @@ export class Beeper {
   }
 
   countdown() { this.tone(880, 0, 0.12); } // 3-2-1
-  /** Pause start: soft descending two-tone, clearly different from the round whistle. */
-  rest() { this.tone(523, 0, 0.5); this.tone(392, 0.45, 0.9); }
   phase() { this.tone(660, 0, 0.7); } // long tone on phase change
-  /** Round start: boxing-style bell, three quick strikes (inharmonic partials, metallic decay). */
-  roundStart() {
+  /** Pause start: boxing-style bell, three quick strikes (inharmonic partials, metallic decay). */
+  rest() {
     if (!this.ctx || !this.master) return;
     const c = this.ctx, base = 784;
     const partials: [number, number, number][] = [[1, 1, 1.1], [2.76, 0.55, 0.7], [5.4, 0.3, 0.4], [8.93, 0.15, 0.25]];
@@ -62,6 +60,27 @@ export class Beeper {
         o.connect(g).connect(this.master);
         o.start(t); o.stop(t + decay + 0.02);
       }
+    }
+  }
+  /** Round start: one gym/arena signal horn blast (detuned saw stack through a low-pass). */
+  roundStart() {
+    if (!this.ctx || !this.master) return;
+    const c = this.ctx, t = c.currentTime, dur = 0.9;
+    const lp = c.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.value = 2200;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.6, t + 0.03);
+    g.gain.setValueAtTime(0.6, t + dur - 0.12);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    lp.connect(g).connect(this.master);
+    for (const f of [233, 236, 349, 466]) {
+      const o = c.createOscillator();
+      o.type = "sawtooth";
+      o.frequency.value = f;
+      o.connect(lp);
+      o.start(t); o.stop(t + dur + 0.02);
     }
   }
   gong() { this.tone(330, 0, 1.2); this.tone(330, 0.9, 1.4); } // double gong at the end
