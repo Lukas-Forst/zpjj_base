@@ -47,7 +47,7 @@ export class Beeper {
   /** Pause start: boxing-style bell, three quick strikes (inharmonic partials, metallic decay). */
   rest() {
     if (!this.ctx || !this.master) return;
-    const c = this.ctx, base = 784;
+    const c = this.ctx, base = 587; // D5
     const partials: [number, number, number][] = [[1, 1, 1.1], [2.76, 0.55, 0.7], [5.4, 0.3, 0.4], [8.93, 0.15, 0.25]];
     for (const at of [0, 0.28, 0.56]) {
       const t = c.currentTime + at;
@@ -62,22 +62,22 @@ export class Beeper {
       }
     }
   }
-  /** Round start: one gym/arena signal horn blast (detuned saw stack through a low-pass). */
+  /** Round start: one short arena-style buzzer (bright, buzzy; not a deep horn). */
   roundStart() {
     if (!this.ctx || !this.master) return;
-    const c = this.ctx, t = c.currentTime, dur = 0.9;
+    const c = this.ctx, t = c.currentTime, dur = 0.65;
     const lp = c.createBiquadFilter();
     lp.type = "lowpass";
-    lp.frequency.value = 2200;
+    lp.frequency.value = 4000;
     const g = c.createGain();
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.6, t + 0.03);
-    g.gain.setValueAtTime(0.6, t + dur - 0.12);
+    g.gain.exponentialRampToValueAtTime(0.35, t + 0.01);
+    g.gain.setValueAtTime(0.35, t + dur - 0.08);
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     lp.connect(g).connect(this.master);
-    for (const f of [233, 236, 349, 466]) {
+    for (const f of [440, 446, 880, 1320]) {
       const o = c.createOscillator();
-      o.type = "sawtooth";
+      o.type = "square";
       o.frequency.value = f;
       o.connect(lp);
       o.start(t); o.stop(t + dur + 0.02);
