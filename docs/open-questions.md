@@ -1,0 +1,9 @@
+# Offene Fragen
+
+- Logo-Dateien für Icons und App-Shell (aktuell Platzhalter, `TODO: Logo ersetzen` in `components/Logo.tsx` und `apps/web/public/icons/`).
+- Echte E-Mail-Adressen der Teammitglieder (nur lokal in `apps/api/seed/users.local.yaml`, nie im Repo).
+- Soll der Stundenplan später aus der Homepage-Quelle (`zpjj.de/schedule`) gespeist werden statt doppelt gepflegt zu werden?
+- Anfängerkurs ist ein separater Kurs und steht nicht im Wochenplan. Gehört er ins CRM (Kohorte)? Hier nicht abgebildet.
+- Cloudflare-Team-Domain und AUD-Tag (manuell, siehe `deploy.md`).
+- HeroUI v3 hat keine `Navbar`-Komponente: die Kopfzeile ist eigener Markup plus `Drawer` (Entscheidung, siehe Kurzbericht).
+- Konto-Button ist vorerst ein deaktivierter Namens-Button (kein Logout bei Cloudflare Access ohne Team-Domain-URL): Logout-Link `https://<team>.cloudflareaccess.com/cdn-cgi/access/logout` ergänzen, sobald bekannt.

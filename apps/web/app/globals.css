@@ -1,0 +1,8 @@
+@import "tailwindcss";
+@import "@heroui/styles";
+
+:root {
+  --accent: #2454e0;
+  --accent-foreground: #ffffff;
+  --brand-red: #d0121a; /* logo and small accents only, never actions */
+}
