@@ -1,0 +1,15 @@
+node_modules/
+.next/
+out/
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.db
+*.db-*
+.env
+.env.*
+!.env.example
+*.local.*
+.superpowers/
+.wrangler/

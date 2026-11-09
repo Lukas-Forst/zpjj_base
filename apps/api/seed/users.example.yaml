@@ -1,0 +1,8 @@
+# Copy to users.local.yaml (gitignored) and use real addresses. display_name of trainers must
+# equal the first names used in the schedule: Nico, Can, Tim, Chris, Lukas.
+users:
+  - {display_name: Nico, email: nico@example.invalid, role: gesellschafter, is_trainer: true}
+  - {display_name: Can, email: can@example.invalid, role: trainer, is_trainer: true}
+  - {display_name: Tim, email: tim@example.invalid, role: gesellschafter, is_trainer: true}
+  - {display_name: Chris, email: chris@example.invalid, role: trainer, is_trainer: true}
+  - {display_name: Lukas, email: lukas@example.invalid, role: gesellschafter, is_trainer: true}
