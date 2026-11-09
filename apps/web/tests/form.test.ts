@@ -14,3 +14,10 @@ it("builds mode specific configs", () => {
 it("fromPreset tolerates garbage", () => {
   expect(fromPreset({ mode: "wat", config: { rounds: "x", work: 20 } })).toMatchObject({ mode: "rounds", rounds: 5, work: 20 });
 });
+
+it("presetBody matches the API contract: mode at top level, not inside config", async () => {
+  const { presetBody } = await import("@/lib/timer/form");
+  expect(presetBody({ ...DEFAULT_FORM })).toEqual({ mode: "rounds", config: { rounds: 5, work: 300, rest: 30, prep: 10 } });
+  expect(presetBody({ ...DEFAULT_FORM, mode: "stopwatch" })).toEqual({ mode: "stopwatch", config: {} });
+  expect(presetBody({ ...DEFAULT_FORM, mode: "countdown" })).toEqual({ mode: "countdown", config: { duration: 300 } });
+});

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { api } from "@/lib/api/client";
 import { errText } from "@/lib/format";
 import type { Beeper } from "@/lib/timer/audio";
-import { type Form, type Mode, MAX_SECONDS, clamp, fromPreset, sanitize, toConfig } from "@/lib/timer/form";
+import { type Form, type Mode, MAX_SECONDS, clamp, fromPreset, presetBody, sanitize } from "@/lib/timer/form";
 import { type Preset, usePresets } from "@/lib/timer/usePresets";
 import { AudioControls } from "./AudioControls";
 
@@ -46,7 +46,7 @@ export function Setup({ form, setForm, isAdmin, beeper, onStart }: {
   const [msg, setMsg] = useState("");
   const upd = (p: Partial<Form>) => setForm(sanitize({ ...form, ...p }));
 
-  const body = () => ({ mode: form.mode, config: toConfig(form) as Record<string, unknown> });
+  const body = () => presetBody(form);
   const create = async () => {
     const { response, error } = await api.POST("/api/timer-presets", { body: { name, ...body(), sort_order: presets.length } });
     if (response.ok) { setName(""); setMsg(""); await refresh(); } else setMsg(errText(error, "Speichern fehlgeschlagen."));

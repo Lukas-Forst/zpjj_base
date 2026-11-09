@@ -26,11 +26,12 @@ function Users() {
   };
   const add = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const f = new FormData(e.currentTarget);
+    const form = e.currentTarget; // currentTarget is null after the first await
+    const f = new FormData(form);
     const { response, error } = await api.POST("/api/users", {
       body: { email: String(f.get("email")), display_name: String(f.get("name")), role: f.get("role") as "trainer", is_trainer: f.get("is_trainer") === "on" },
     });
-    if (response.ok) { e.currentTarget.reset(); setMsg(""); } else setMsg(errText(error, "Anlegen fehlgeschlagen."));
+    if (response.ok) { form.reset(); setMsg(""); } else setMsg(errText(error, "Anlegen fehlgeschlagen."));
     await load();
   };
   return (

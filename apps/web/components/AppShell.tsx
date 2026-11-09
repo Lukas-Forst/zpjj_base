@@ -1,5 +1,5 @@
 "use client";
-import { Button, Drawer } from "@heroui/react";
+import { Drawer } from "@heroui/react";
 import Link from "next/link";
 import { createContext, useContext } from "react";
 import { type Me, useMe } from "@/lib/useMe";
@@ -46,7 +46,7 @@ export function AppShell({ children, dark = false }: { children: React.ReactNode
           </Drawer.Backdrop>
         </Drawer>
         <Link href="/" aria-label="Zur Startseite"><Logo /></Link>
-        <Button variant="secondary" aria-label={`Konto: ${me.display_name}`} isDisabled>{me.display_name}</Button>
+        <span aria-label={`Konto: ${me.display_name}`} className={`rounded-full border px-4 py-2 text-sm ${dark ? "border-[#2B3A5E] text-[#F4F7FF]" : "border-neutral-300"}`}>{me.display_name}</span>
       </header>
       {children}
       </div>

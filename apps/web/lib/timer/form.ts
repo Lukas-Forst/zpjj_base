@@ -39,3 +39,9 @@ export function fromPreset(p: { mode: string; config: Record<string, unknown> })
     duration: num("duration", DEFAULT_FORM.duration),
   });
 }
+
+/** Request body for the presets API: `mode` lives beside `config`, never inside it. */
+export function presetBody(f: Form): { mode: Mode; config: Record<string, number> } {
+  const { mode, ...config } = toConfig(f);
+  return { mode, config };
+}

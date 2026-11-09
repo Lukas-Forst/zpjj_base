@@ -135,3 +135,20 @@ def test_alembic_upgrade_head(tmp_path, monkeypatch):
     cfg = Config(str(Path(__file__).parent.parent / "alembic.ini"))
     cfg.set_main_option("script_location", str(Path(__file__).parent.parent / "alembic"))
     command.upgrade(cfg, "head")
+
+
+def test_bootstrap_survives_concurrent_insert(app, monkeypatch):
+    """Second process loses the insert race: startup must not crash."""
+    from sqlalchemy.orm import Session
+
+    from app.main import bootstrap_admins
+    real = Session.scalar
+    calls = {"n": 0}
+
+    def racy(self, *a, **k):  # the existence check says "missing" although the row exists
+        calls["n"] += 1
+        return None if calls["n"] == 1 else real(self, *a, **k)
+
+    bootstrap_admins(app.state.session_factory, ["a@example.com"])
+    monkeypatch.setattr(Session, "scalar", racy)
+    bootstrap_admins(app.state.session_factory, ["a@example.com"])

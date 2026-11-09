@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
 from app.auth import JWKSCache
 from app.config import Settings
@@ -18,10 +19,14 @@ log = logging.getLogger("hub")
 def bootstrap_admins(session_factory, emails) -> None:
     with session_factory() as db:
         for email in emails:
-            if not db.scalar(select(User).where(User.email == email)):
-                db.add(User(email=email, display_name=email.split("@")[0],
-                            role=Role.gesellschafter, is_trainer=False))
-        db.commit()
+            if db.scalar(select(User).where(User.email == email)):
+                continue
+            db.add(User(email=email, display_name=email.split("@")[0],
+                        role=Role.gesellschafter, is_trainer=False))
+            try:
+                db.commit()
+            except IntegrityError:  # another process created it first
+                db.rollback()
 
 
 def create_app(settings: Settings | None = None, jwks: JWKSCache | None = None) -> FastAPI:
