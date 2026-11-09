@@ -200,6 +200,16 @@ class GapOut(BaseModel):
     absent: list[str]
 
 
+class SubstituteOut(BaseModel):
+    slot_id: int
+    date: date
+    user_id: int
+    user_name: str
+    weekday: int
+    start_time: time
+    kind: SlotKind
+
+
 class SubstituteIn(BaseModel):
     slot_id: int
     date: date

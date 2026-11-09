@@ -8,7 +8,7 @@ from app.auth import current_user, get_db
 from app.coverage import compute_gaps
 from app.dates import today_berlin
 from app.models import Role, Slot, Substitute, User, Vacation
-from app.schemas import GapOut, SubstituteIn
+from app.schemas import GapOut, SubstituteIn, SubstituteOut
 
 router = APIRouter(prefix="/coverage")
 
@@ -31,6 +31,16 @@ def coverage(_: User = Depends(current_user), db: Session = Depends(get_db)):
                    start_time=by_slot[g.slot_id].start_time, kind=by_slot[g.slot_id].kind,
                    level=g.level, absent=[names[i] for i in g.absent_user_ids])
             for g in compute_gaps(slots, vacs, subs, today)]
+
+
+@router.get("/substitutes", response_model=list[SubstituteOut])
+def list_substitutes(_: User = Depends(current_user), db: Session = Depends(get_db)):
+    q = select(Substitute, Slot, User).join(Slot, Slot.id == Substitute.slot_id).join(
+        User, User.id == Substitute.user_id).where(
+        Substitute.date >= today_berlin()).order_by(Substitute.date, Slot.start_time)
+    return [SubstituteOut(slot_id=sb.slot_id, date=sb.date, user_id=sb.user_id,
+                          user_name=u.display_name, weekday=sl.weekday,
+                          start_time=sl.start_time, kind=sl.kind) for sb, sl, u in db.execute(q)]
 
 
 @router.put("/substitutes", status_code=204)

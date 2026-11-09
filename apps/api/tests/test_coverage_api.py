@@ -75,3 +75,12 @@ def test_trainer_cannot_substitute_for_other(client, setup):
     post_vac(client, s["boss"], s["a"])
     assert put(client, s["tim"], s["sid"], user_id=s["b"]).status_code == 403
     assert put(client, s["boss"], s["sid"], user_id=s["c"]).status_code == 204
+
+
+def test_list_substitutes(client, setup):
+    s = setup
+    post_vac(client, s["boss"], s["a"])
+    put(client, s["tim"], s["sid"])
+    r = client.get("/api/coverage/substitutes", headers=s["tim"]).json()
+    assert [(x["slot_id"], x["date"], x["user_id"], x["user_name"], x["kind"]) for x in r] == [
+        (s["sid"], DAY.isoformat(), s["c"], "tim", "no_gi")]
