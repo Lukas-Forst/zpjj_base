@@ -48,5 +48,5 @@ Das Team trägt Urlaub heute als Termin "Vorname Urlaub" in einen gemeinsamen Go
 - **Hinweise nur in der App**, keine E-Mail oder Push (Push ist laut Plan Nicht-Ziel).
 
 ## Noch offen (nur der Auftraggeber kann antworten)
-1. Stimmt die feste Zuordnung Slot → Trainer aus dem Stundenplan als Grundlage der Warnung? Wird `open_mat` mitgeprüft?
+1. ~~Open Mat~~ Beantwortet: `open_mat` wird nicht geprüft, **außer am Sonntag**: dort warnt die Base, wenn kein Trainer verfügbar ist (Lesart des Entwurfs: der Sonntags-Open-Mat hat keinen festen Trainer, geprüft wird, ob mindestens ein aktiver Trainer nicht im Urlaub ist). Die Frage, ob die feste Slot-Zuordnung stimmt, wurde nicht beantwortet; Entwurf geht davon aus, dass sie stimmt.
 2. Enthält der bestehende Kalender Sonderformate (z. B. "Nico Urlaub 3 Tage", Einträge mit Uhrzeit), und kann der Kalender mit einem Service-Account geteilt werden?
