@@ -46,29 +46,23 @@ export class Beeper {
   /** Pause start: soft descending two-tone, clearly different from the round whistle. */
   rest() { this.tone(523, 0, 0.5); this.tone(392, 0.45, 0.9); }
   phase() { this.tone(660, 0, 0.7); } // long tone on phase change
-  /** Round start: loud trill whistle (~2.2 kHz, softer harmonic). */
-  whistle() {
+  /** Round start: boxing-style bell, three quick strikes (inharmonic partials, metallic decay). */
+  roundStart() {
     if (!this.ctx || !this.master) return;
-    const c = this.ctx, t = c.currentTime, dur = 0.9;
-    const out = c.createGain();
-    out.gain.setValueAtTime(0.0001, t);
-    out.gain.exponentialRampToValueAtTime(1, t + 0.01);
-    out.gain.setValueAtTime(1, t + dur - 0.1);
-    out.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    out.connect(this.master);
-    const lfo = c.createOscillator(), depth = c.createGain();
-    lfo.frequency.value = 24;
-    depth.gain.value = 140;
-    lfo.connect(depth);
-    for (const [f, vol] of [[2200, 1], [4400, 0.15]] as const) {
-      const o = c.createOscillator(), g = c.createGain();
-      o.frequency.value = f;
-      g.gain.value = vol;
-      depth.connect(o.frequency);
-      o.connect(g).connect(out);
-      o.start(t); o.stop(t + dur + 0.02);
+    const c = this.ctx, base = 784;
+    const partials: [number, number, number][] = [[1, 1, 1.1], [2.76, 0.55, 0.7], [5.4, 0.3, 0.4], [8.93, 0.15, 0.25]];
+    for (const at of [0, 0.28, 0.56]) {
+      const t = c.currentTime + at;
+      for (const [ratio, vol, decay] of partials) {
+        const o = c.createOscillator(), g = c.createGain();
+        o.frequency.value = base * ratio;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.5 * vol, t + 0.004);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + decay);
+        o.connect(g).connect(this.master);
+        o.start(t); o.stop(t + decay + 0.02);
+      }
     }
-    lfo.start(t); lfo.stop(t + dur + 0.02);
   }
   gong() { this.tone(330, 0, 1.2); this.tone(330, 0.9, 1.4); } // double gong at the end
   vibrate(ms: number | number[]) {

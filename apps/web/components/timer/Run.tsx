@@ -37,7 +37,7 @@ export function Run({ config, beeper, onExit, fsRef }: { config: Config; beeper:
     if (s.events.length) {
       const to = s.events[s.events.length - 1].to;
       if (to === "done") { beeper.gong(); beeper.vibrate([200, 100, 200]); }
-      else if (to === "work") { beeper.whistle(); beeper.vibrate(400); } // round start
+      else if (to === "work") { beeper.roundStart(); beeper.vibrate(400); } // round start
       else if (to === "rest") { beeper.rest(); beeper.vibrate([150, 80, 150]); }
       else { beeper.phase(); beeper.vibrate(200); }
       setAnnounce(LABEL[to]);
@@ -50,7 +50,7 @@ export function Run({ config, beeper, onExit, fsRef }: { config: Config; beeper:
 
   useEffect(() => {
     engine.start();
-    if (engine.tick().kind === "work") beeper.whistle(); // no preparation phase: the run itself starts a round
+    if (engine.tick().kind === "work") beeper.roundStart(); // no preparation phase: the run itself starts a round
     step();
     const id = setInterval(step, 100);
     document.addEventListener("visibilitychange", step);
