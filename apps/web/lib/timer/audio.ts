@@ -43,8 +43,10 @@ export class Beeper {
   }
 
   countdown() { this.tone(880, 0, 0.12); } // 3-2-1
+  /** Pause start: soft descending two-tone, clearly different from the round whistle. */
+  rest() { this.tone(523, 0, 0.5); this.tone(392, 0.45, 0.9); }
   phase() { this.tone(660, 0, 0.7); } // long tone on phase change
-  /** Round start: loud trill whistle (~2.9 kHz with fast vibrato plus a harmonic). */
+  /** Round start: loud trill whistle (~2.2 kHz, softer harmonic). */
   whistle() {
     if (!this.ctx || !this.master) return;
     const c = this.ctx, t = c.currentTime, dur = 0.9;
@@ -55,10 +57,10 @@ export class Beeper {
     out.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     out.connect(this.master);
     const lfo = c.createOscillator(), depth = c.createGain();
-    lfo.frequency.value = 28;
-    depth.gain.value = 220;
+    lfo.frequency.value = 24;
+    depth.gain.value = 140;
     lfo.connect(depth);
-    for (const [f, vol] of [[2900, 1], [5800, 0.35]] as const) {
+    for (const [f, vol] of [[2200, 1], [4400, 0.15]] as const) {
       const o = c.createOscillator(), g = c.createGain();
       o.frequency.value = f;
       g.gain.value = vol;

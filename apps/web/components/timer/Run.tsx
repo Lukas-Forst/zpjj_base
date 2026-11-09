@@ -38,6 +38,7 @@ export function Run({ config, beeper, onExit, fsRef }: { config: Config; beeper:
       const to = s.events[s.events.length - 1].to;
       if (to === "done") { beeper.gong(); beeper.vibrate([200, 100, 200]); }
       else if (to === "work") { beeper.whistle(); beeper.vibrate(400); } // round start
+      else if (to === "rest") { beeper.rest(); beeper.vibrate([150, 80, 150]); }
       else { beeper.phase(); beeper.vibrate(200); }
       setAnnounce(LABEL[to]);
     } else if (s.status === "running" && !stopwatch) {
