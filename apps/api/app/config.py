@@ -1,3 +1,4 @@
+import json
 import os
 from dataclasses import dataclass
 
@@ -14,6 +15,8 @@ class Settings:
     trello_key: str = ""
     trello_token: str = ""
     trello_board: str = ""
+    gcal_calendar_id: str = ""
+    gcal_service_account_json: str = ""
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -31,9 +34,16 @@ class Settings:
             trello_key=e("TRELLO_KEY", ""),
             trello_token=e("TRELLO_TOKEN", ""),
             trello_board=e("TRELLO_BOARD", ""),
+            gcal_calendar_id=e("GCAL_CALENDAR_ID", ""),
+            gcal_service_account_json=e("GCAL_SERVICE_ACCOUNT_JSON", ""),
         )
 
     def validate(self) -> None:
+        if self.gcal_service_account_json:
+            try:
+                json.loads(self.gcal_service_account_json)
+            except ValueError:
+                raise RuntimeError("GCAL_SERVICE_ACCOUNT_JSON is not valid JSON") from None
         if self.auth_dev_email and self.env != "dev":
             raise RuntimeError("AUTH_DEV_EMAIL is set but ENV is not 'dev': refusing to start")
         if self.env != "dev" and not (self.cf_access_team_domain and self.cf_access_aud):

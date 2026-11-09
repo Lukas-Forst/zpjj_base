@@ -15,6 +15,7 @@ export const roleLabel = (m: Me) => ROLE_LABEL[m.role] + (m.role === "gesellscha
 const LINKS = [
   { href: "/", label: "Start" },
   { href: "/stundenplan/", label: "Stundenplan" },
+  { href: "/urlaub/", label: "Urlaub" },
 ];
 
 export function AppShell({ children, dark = false }: { children: React.ReactNode; dark?: boolean }) {

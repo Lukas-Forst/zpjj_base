@@ -1,7 +1,7 @@
 # Datenmodell
 
 ## Migriert (M0/M1)
-- `users`, `slots`, `slot_trainers` (M0), `timer_presets` (M1). Siehe `apps/api/app/models.py`.
+- `users`, `slots`, `slot_trainers` (M0), `timer_presets` (M1), `vacations`, `substitutes`, `sync_state` (M3: Urlaub, Vertretung pro Slot und Datum, Zustand des Kalender-Abgleichs). Siehe `apps/api/app/models.py`.
 - Slot-Zeiten sind lokale Gym-Zeit (Europe/Berlin), Zeitstempel UTC. Slots werden nur deaktiviert.
 
 ## Nur dokumentiert (nicht migriert)

@@ -178,6 +178,94 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/vacations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Vacations */
+        get: operations["list_vacations_api_vacations_get"];
+        put?: never;
+        /** Create */
+        post: operations["create_api_vacations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/vacations/{vacation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete */
+        delete: operations["delete_api_vacations__vacation_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/coverage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Coverage */
+        get: operations["coverage_api_coverage_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/coverage/substitutes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Substitutes */
+        get: operations["list_substitutes_api_coverage_substitutes_get"];
+        /** Add Substitute */
+        put: operations["add_substitute_api_coverage_substitutes_put"];
+        post?: never;
+        /** Remove Substitute */
+        delete: operations["remove_substitute_api_coverage_substitutes_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sync-status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Status */
+        get: operations["status_api_sync_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -188,6 +276,28 @@ export interface components {
             weekday: number;
             /** Topics */
             topics: string[];
+        };
+        /** GapOut */
+        GapOut: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Slot Id */
+            slot_id: number;
+            /** Weekday */
+            weekday: number;
+            /**
+             * Start Time
+             * Format: time
+             */
+            start_time: string;
+            kind: components["schemas"]["SlotKind"];
+            /** Level */
+            level: string;
+            /** Absent */
+            absent: string[];
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -314,6 +424,53 @@ export interface components {
             /** Sort Order */
             sort_order?: number | null;
         };
+        /** SubstituteIn */
+        SubstituteIn: {
+            /** Slot Id */
+            slot_id: number;
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** User Id */
+            user_id?: number | null;
+        };
+        /** SubstituteOut */
+        SubstituteOut: {
+            /** Slot Id */
+            slot_id: number;
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** User Id */
+            user_id: number;
+            /** User Name */
+            user_name: string;
+            /** Weekday */
+            weekday: number;
+            /**
+             * Start Time
+             * Format: time
+             */
+            start_time: string;
+            kind: components["schemas"]["SlotKind"];
+        };
+        /** SyncOut */
+        SyncOut: {
+            /** Enabled */
+            enabled: boolean;
+            /** Ok */
+            ok: boolean;
+            /** Error Since */
+            error_since: string | null;
+            /** Last Ok At */
+            last_ok_at: string | null;
+            /** Unmatched */
+            unmatched: string[];
+        };
         /**
          * TimerMode
          * @enum {string}
@@ -381,6 +538,42 @@ export interface components {
             is_trainer?: boolean | null;
             /** Active */
             active?: boolean | null;
+        };
+        /** VacationIn */
+        VacationIn: {
+            /** User Id */
+            user_id?: number | null;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+        };
+        /** VacationOut */
+        VacationOut: {
+            /** Id */
+            id: number;
+            /** User Id */
+            user_id: number;
+            /** User Name */
+            user_name: string;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+            /** Source */
+            source: string;
         };
         /** ValidationError */
         ValidationError: {
@@ -799,6 +992,210 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TodayOut"];
+                };
+            };
+        };
+    };
+    list_vacations_api_vacations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VacationOut"][];
+                };
+            };
+        };
+    };
+    create_api_vacations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VacationIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VacationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_api_vacations__vacation_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                vacation_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    coverage_api_coverage_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GapOut"][];
+                };
+            };
+        };
+    };
+    list_substitutes_api_coverage_substitutes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubstituteOut"][];
+                };
+            };
+        };
+    };
+    add_substitute_api_coverage_substitutes_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubstituteIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_substitute_api_coverage_substitutes_delete: {
+        parameters: {
+            query: {
+                slot_id: number;
+                date: string;
+                user_id: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    status_api_sync_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SyncOut"];
                 };
             };
         };

@@ -1,4 +1,4 @@
-from datetime import time
+from datetime import date, datetime, time
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -169,6 +169,53 @@ class PresetPatch(BaseModel):
     _n = field_validator("name")(lambda v: v if v is None else _name(v))
 
 
+class VacationIn(BaseModel):
+    user_id: int | None = None
+    start_date: date
+    end_date: date
+
+    @model_validator(mode="after")
+    def _order(self):
+        if self.end_date < self.start_date:
+            raise ValueError("Ende liegt vor dem Beginn")
+        return self
+
+
+class VacationOut(BaseModel):
+    id: int
+    user_id: int
+    user_name: str
+    start_date: date
+    end_date: date
+    source: str
+
+
+class GapOut(BaseModel):
+    date: date
+    slot_id: int
+    weekday: int
+    start_time: time
+    kind: SlotKind
+    level: str  # unbesetzt | teilweise
+    absent: list[str]
+
+
+class SubstituteOut(BaseModel):
+    slot_id: int
+    date: date
+    user_id: int
+    user_name: str
+    weekday: int
+    start_time: time
+    kind: SlotKind
+
+
+class SubstituteIn(BaseModel):
+    slot_id: int
+    date: date
+    user_id: int | None = None
+
+
 class DayOut(BaseModel):
     weekday: int  # 0 = Montag
     topics: list[str]
@@ -180,3 +227,11 @@ class TodayOut(BaseModel):
     weekday: int
     days: list[DayOut]
     next_week: str | None
+
+
+class SyncOut(BaseModel):
+    enabled: bool
+    ok: bool
+    error_since: datetime | None
+    last_ok_at: datetime | None
+    unmatched: list[str]

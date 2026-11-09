@@ -25,7 +25,7 @@ export function visibleTiles(role: Role, env: TileEnv): Tile[] {
     { id: "timer", title: "Gym-Timer", sub: "Runden, Countdown, Stoppuhr", icon: "⏱", state: "active", href: "/timer/", disabled: false },
     { id: "stundenplan", title: "Stundenplan", sub: "Wochenplan mit Trainern", icon: "📅", state: "active", href: "/stundenplan/", disabled: false },
     soon("heute", "Heute", "Nächste Einheit", "☀"),
-    soon("urlaub", "Urlaub", "Abwesenheiten im Team", "🏖"),
+    { id: "urlaub", title: "Urlaub", sub: "Abwesenheiten und Besetzung", icon: "🏖", state: "active", href: "/urlaub/", disabled: false },
     soon("anwesenheit", "Anwesenheit", "Zahlen pro Einheit", "👥"),
     ext("planer", "Produktionsplaner", "Merch und Produktion", "🏭", env.plannerUrl),
     ext("crm", "CRM", "Kontakte und Probetrainings", "🗂", env.crmUrl),
