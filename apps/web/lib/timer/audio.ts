@@ -25,7 +25,7 @@ export class Beeper {
 
   /** Volume and mute act immediately, also on sounds that are already playing. */
   apply() {
-    if (this.master) this.master.gain.value = this.muted ? 0 : this.volume;
+    if (this.master) this.master.gain.value = this.muted ? 0 : this.volume * 1.5; // headroom: loud in a gym
   }
 
   private tone(freq: number, at: number, dur: number) {
@@ -44,6 +44,30 @@ export class Beeper {
 
   countdown() { this.tone(880, 0, 0.12); } // 3-2-1
   phase() { this.tone(660, 0, 0.7); } // long tone on phase change
+  /** Round start: loud trill whistle (~2.9 kHz with fast vibrato plus a harmonic). */
+  whistle() {
+    if (!this.ctx || !this.master) return;
+    const c = this.ctx, t = c.currentTime, dur = 0.9;
+    const out = c.createGain();
+    out.gain.setValueAtTime(0.0001, t);
+    out.gain.exponentialRampToValueAtTime(1, t + 0.01);
+    out.gain.setValueAtTime(1, t + dur - 0.1);
+    out.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    out.connect(this.master);
+    const lfo = c.createOscillator(), depth = c.createGain();
+    lfo.frequency.value = 28;
+    depth.gain.value = 220;
+    lfo.connect(depth);
+    for (const [f, vol] of [[2900, 1], [5800, 0.35]] as const) {
+      const o = c.createOscillator(), g = c.createGain();
+      o.frequency.value = f;
+      g.gain.value = vol;
+      depth.connect(o.frequency);
+      o.connect(g).connect(out);
+      o.start(t); o.stop(t + dur + 0.02);
+    }
+    lfo.start(t); lfo.stop(t + dur + 0.02);
+  }
   gong() { this.tone(330, 0, 1.2); this.tone(330, 0.9, 1.4); } // double gong at the end
   vibrate(ms: number | number[]) {
     if (!this.muted && "vibrate" in navigator) navigator.vibrate(ms);

@@ -36,7 +36,9 @@ export function Run({ config, beeper, onExit, fsRef }: { config: Config; beeper:
     setSnap(s);
     if (s.events.length) {
       const to = s.events[s.events.length - 1].to;
-      if (to === "done") { beeper.gong(); beeper.vibrate([200, 100, 200]); } else { beeper.phase(); beeper.vibrate(200); }
+      if (to === "done") { beeper.gong(); beeper.vibrate([200, 100, 200]); }
+      else if (to === "work") { beeper.whistle(); beeper.vibrate(400); } // round start
+      else { beeper.phase(); beeper.vibrate(200); }
       setAnnounce(LABEL[to]);
     } else if (s.status === "running" && !stopwatch) {
       const sec = Math.ceil(s.remainingMs / 1000);
@@ -47,11 +49,12 @@ export function Run({ config, beeper, onExit, fsRef }: { config: Config; beeper:
 
   useEffect(() => {
     engine.start();
+    if (engine.tick().kind === "work") beeper.whistle(); // no preparation phase: the run itself starts a round
     step();
     const id = setInterval(step, 100);
     document.addEventListener("visibilitychange", step);
     return () => { clearInterval(id); document.removeEventListener("visibilitychange", step); };
-  }, [engine, step]);
+  }, [engine, step, beeper]);
 
   const { supported } = useWakeLock(snap.status === "running");
   const run = (fn: () => void) => () => { fn(); step(); };
