@@ -49,4 +49,4 @@ Das Team trägt Urlaub heute als Termin "Vorname Urlaub" in einen gemeinsamen Go
 
 ## Noch offen (nur der Auftraggeber kann antworten)
 1. ~~Open Mat~~ Beantwortet: `open_mat` wird nie geprüft. Am Sonntag deckt der Trainer der Vormittagseinheiten (10:00–11:30, laut Plan Tim und Lukas) den Open Mat mit ab, also reicht die normale Prüfung dieser beiden Slots. Die Frage, ob die feste Slot-Zuordnung stimmt, wurde nicht beantwortet; der Entwurf geht davon aus, dass sie stimmt.
-2. Enthält der bestehende Kalender Sonderformate (z. B. "Nico Urlaub 3 Tage", Einträge mit Uhrzeit), und kann der Kalender mit einem Service-Account geteilt werden?
+2. ~~Kalender~~ Beantwortet: Es gibt nur Einträge der Form "Vorname Urlaub", keine Sonderformate. Der Kalender kann mit einem Service-Account geteilt werden (Auftraggeber richtet ihn ein, der Builder beschreibt die Schritte in `docs/deploy.md`).
