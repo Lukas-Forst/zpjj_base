@@ -7,3 +7,4 @@ export function errText(error: unknown, fallback: string): string {
   const d = (error as { detail?: unknown } | undefined)?.detail;
   return typeof d === "string" ? d : fallback;
 }
+export const deDate = (iso: string) => new Date(iso + "T00:00").toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" });
