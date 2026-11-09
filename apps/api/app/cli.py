@@ -1,4 +1,4 @@
-"""CLI: python -m app.cli {seed-schedule,export}"""
+"""CLI: python -m app.cli {seed-schedule,seed-presets,export}"""
 import argparse
 import json
 import sys
@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.config import Settings
 from app.db import Base, make_engine, make_session_factory
-from app.models import Role, Slot, SlotKind, User
+from app.models import Role, Slot, SlotKind, TimerMode, TimerPreset, User
 
 SEED_DIR = Path(__file__).resolve().parent.parent / "seed"
 D = {"Di": 2, "Mi": 3, "Do": 4, "Fr": 5, "Sa": 6, "So": 7}
@@ -60,6 +60,22 @@ def seed_schedule(db: Session, users_file: Path) -> None:
     db.commit()
 
 
+# Examples only: the team adapts these in the app. Marked "(Beispiel)" in the name.
+EXAMPLE_PRESETS = [
+    ("Rolling (Beispiel)", TimerMode.rounds, {"rounds": 5, "work": 300, "rest": 30, "prep": 10}),
+    ("Drill (Beispiel)", TimerMode.rounds, {"rounds": 3, "work": 180, "rest": 20, "prep": 10}),
+    ("Tabata (Beispiel)", TimerMode.rounds, {"rounds": 8, "work": 20, "rest": 10, "prep": 10}),
+    ("Wettkampf (Beispiel)", TimerMode.countdown, {"duration": 300}),
+]
+
+
+def seed_presets(db: Session) -> None:
+    for i, (name, mode, config) in enumerate(EXAMPLE_PRESETS):
+        if not db.scalar(select(TimerPreset).where(TimerPreset.name == name)):
+            db.add(TimerPreset(name=name, mode=mode, config=config, sort_order=i))
+    db.commit()
+
+
 def export_json(engine) -> str:
     out = {}
     with engine.connect() as c:
@@ -73,6 +89,7 @@ def main(argv=None) -> None:
     sub = ap.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("seed-schedule")
     s.add_argument("--users-file", type=Path, default=SEED_DIR / "users.local.yaml")
+    sub.add_parser("seed-presets")
     sub.add_parser("export")
     a = ap.parse_args(argv)
     engine = make_engine(Settings.from_env().database_url)
@@ -80,7 +97,10 @@ def main(argv=None) -> None:
         sys.stdout.write(export_json(engine) + "\n")
     else:
         with make_session_factory(engine)() as db:
-            seed_schedule(db, a.users_file)
+            if a.cmd == "seed-presets":
+                seed_presets(db)
+            else:
+                seed_schedule(db, a.users_file)
 
 
 if __name__ == "__main__":

@@ -125,6 +125,42 @@ export interface paths {
         patch: operations["patch_user_api_users__user_id__patch"];
         trace?: never;
     };
+    "/api/timer-presets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Presets */
+        get: operations["list_presets_api_timer_presets_get"];
+        put?: never;
+        /** Create Preset */
+        post: operations["create_preset_api_timer_presets_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/timer-presets/{preset_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Preset */
+        delete: operations["delete_preset_api_timer_presets__preset_id__delete"];
+        options?: never;
+        head?: never;
+        /** Patch Preset */
+        patch: operations["patch_preset_api_timer_presets__preset_id__patch"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -143,6 +179,47 @@ export interface components {
             role: components["schemas"]["Role"];
             /** Is Trainer */
             is_trainer: boolean;
+        };
+        /** PresetCreate */
+        PresetCreate: {
+            /** Name */
+            name: string;
+            mode: components["schemas"]["TimerMode"];
+            /** Config */
+            config: {
+                [key: string]: unknown;
+            };
+            /**
+             * Sort Order
+             * @default 0
+             */
+            sort_order: number;
+        };
+        /** PresetOut */
+        PresetOut: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            mode: components["schemas"]["TimerMode"];
+            /** Config */
+            config: {
+                [key: string]: unknown;
+            };
+            /** Sort Order */
+            sort_order: number;
+        };
+        /** PresetPatch */
+        PresetPatch: {
+            /** Name */
+            name?: string | null;
+            mode?: components["schemas"]["TimerMode"] | null;
+            /** Config */
+            config?: {
+                [key: string]: unknown;
+            } | null;
+            /** Sort Order */
+            sort_order?: number | null;
         };
         /**
          * Role
@@ -213,6 +290,11 @@ export interface components {
             /** Sort Order */
             sort_order?: number | null;
         };
+        /**
+         * TimerMode
+         * @enum {string}
+         */
+        TimerMode: "rounds" | "countdown" | "stopwatch";
         /** TrainerIds */
         TrainerIds: {
             /** User Ids */
@@ -534,6 +616,123 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_presets_api_timer_presets_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PresetOut"][];
+                };
+            };
+        };
+    };
+    create_preset_api_timer_presets_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PresetCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PresetOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_preset_api_timer_presets__preset_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                preset_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_preset_api_timer_presets__preset_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                preset_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PresetPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PresetOut"];
                 };
             };
             /** @description Validation Error */

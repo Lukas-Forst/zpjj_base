@@ -13,3 +13,4 @@ __pycache__/
 *.local.*
 .superpowers/
 .wrangler/
+tsconfig.tsbuildinfo

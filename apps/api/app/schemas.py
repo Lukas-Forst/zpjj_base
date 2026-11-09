@@ -1,8 +1,8 @@
 from datetime import time
 
-from pydantic import BaseModel, ConfigDict, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from app.models import Role, SlotKind
+from app.models import Role, SlotKind, TimerMode
 
 
 class MeOut(BaseModel):
@@ -103,3 +103,67 @@ class SlotPatch(BaseModel):
 
 class TrainerIds(BaseModel):
     user_ids: list[int]
+
+
+# --- timer presets (M1). Times in seconds. ---
+MAX_SECONDS = 99 * 60 + 59  # 99:59
+
+
+class RoundsConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    rounds: int = Field(ge=1, le=99)
+    work: int = Field(ge=1, le=MAX_SECONDS)
+    rest: int = Field(ge=0, le=MAX_SECONDS)
+    prep: int = Field(default=10, ge=0, le=MAX_SECONDS)
+
+
+class CountdownConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    duration: int = Field(ge=1, le=MAX_SECONDS)
+
+
+class StopwatchConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+_CONFIG = {
+    TimerMode.rounds: RoundsConfig,
+    TimerMode.countdown: CountdownConfig,
+    TimerMode.stopwatch: StopwatchConfig,
+}
+
+
+def _validated(mode: TimerMode, config: dict) -> dict:
+    return _CONFIG[mode].model_validate(config).model_dump()
+
+
+class PresetOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    name: str
+    mode: TimerMode
+    config: dict
+    sort_order: int
+
+
+class PresetCreate(BaseModel):
+    name: str
+    mode: TimerMode
+    config: dict
+    sort_order: int = 0
+
+    _n = field_validator("name")(_name)
+
+    @model_validator(mode="after")
+    def _cfg(self):
+        self.config = _validated(self.mode, self.config)
+        return self
+
+
+class PresetPatch(BaseModel):
+    name: str | None = None
+    mode: TimerMode | None = None
+    config: dict | None = None
+    sort_order: int | None = None
+
+    _n = field_validator("name")(lambda v: v if v is None else _name(v))

@@ -61,3 +61,21 @@ class Slot(Base):
     active: Mapped[bool] = mapped_column(default=True)
     sort_order: Mapped[int] = mapped_column(default=0)
     trainers: Mapped[list[User]] = relationship(secondary="slot_trainers", order_by=User.id)
+
+
+class TimerMode(enum.StrEnum):
+    rounds = "rounds"
+    countdown = "countdown"
+    stopwatch = "stopwatch"
+
+
+class TimerPreset(Base):
+    __tablename__ = "timer_presets"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(sa.String(100))
+    mode: Mapped[TimerMode] = mapped_column(_enum(TimerMode, "timer_mode"))
+    config: Mapped[dict] = mapped_column(sa.JSON)  # seconds; shape depends on mode
+    sort_order: Mapped[int] = mapped_column(default=0)
+    created_by: Mapped[int | None] = mapped_column(sa.ForeignKey("users.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(sa.DateTime, default=_now)
+    updated_at: Mapped[datetime] = mapped_column(sa.DateTime, default=_now, onupdate=_now)
