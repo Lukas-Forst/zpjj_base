@@ -54,3 +54,16 @@ Nur lesend. Fly-Secrets setzen (nie ins Repo):
 `fly secrets set TRELLO_KEY=… TRELLO_TOKEN=… TRELLO_BOARD=<Board-ID oder Shortlink> -a zpjj-base-api`
 Token mit `read`-Scope: `https://trello.com/1/authorize?key=<KEY>&scope=read&expiration=never&response_type=token&name=ZPJJ%20Base`.
 Erwartet: Liste "Technik", Karte "Woche NN" (ISO-Kalenderwoche), Beschreibung mit Zeilen "Montag" … "Sonntag" und optional "Folgewoche: …". Ohne die drei Variablen bleibt der Streifen unsichtbar. Cache 10 Minuten im Speicher.
+
+## Google Calendar (Urlaub, M3)
+
+Die Base gleicht Urlaub in beide Richtungen mit einem gemeinsamen Kalender ab (Termine "Vorname Urlaub", ganztägig). Ohne die zwei Variablen unten ist der Abgleich aus und die App läuft normal.
+
+1. In der Google Cloud Console ein Projekt anlegen und die **Google Calendar API** aktivieren.
+2. Unter "IAM & Verwaltung → Dienstkonten" ein **Service-Account** anlegen, dann "Schlüssel → Neuen Schlüssel erstellen → JSON". Die Datei nie ins Repo legen.
+3. Den Kalender in Google Calendar öffnen: Einstellungen und Freigabe → "Für bestimmte Personen freigeben" → die E-Mail des Service-Accounts (`…@….iam.gserviceaccount.com`) mit **"Änderungen an Terminen vornehmen"** hinzufügen. Die Kalender-ID steht unter "Kalender integrieren".
+4. Secrets setzen:
+   `fly secrets set GCAL_CALENDAR_ID=<Kalender-ID> GCAL_SERVICE_ACCOUNT_JSON="$(cat schluessel.json)" -a zpjj-base-api`
+5. Prüfen: Auf der Seite `/urlaub/` Urlaub eintragen, der Termin erscheint im Kalender. Bei Problemen zeigt die Base "Kalender-Sync fehlgeschlagen seit …" (Abgleich alle 15 Minuten und nach jeder Änderung).
+
+Verhalten: Von der Base angelegte Termine werden bei Löschung oder Änderung von Hand im Kalender wiederhergestellt. Von Hand angelegte "Vorname Urlaub"-Termine werden eingelesen. Nicht zuordenbare Titel erscheinen unter "Nicht zugeordnete Kalendereinträge".
