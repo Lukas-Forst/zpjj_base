@@ -1,5 +1,6 @@
+import datetime as dt
 import enum
-from datetime import UTC, datetime, time
+from datetime import UTC, date, datetime, time
 
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -79,3 +80,38 @@ class TimerPreset(Base):
     created_by: Mapped[int | None] = mapped_column(sa.ForeignKey("users.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(sa.DateTime, default=_now)
     updated_at: Mapped[datetime] = mapped_column(sa.DateTime, default=_now, onupdate=_now)
+
+
+class VacationSource(enum.StrEnum):
+    base = "base"
+    calendar = "calendar"
+
+
+class Vacation(Base):
+    __tablename__ = "vacations"
+    __table_args__ = (sa.CheckConstraint("end_date >= start_date"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(sa.ForeignKey("users.id"))
+    start_date: Mapped[date]
+    end_date: Mapped[date]  # inclusive
+    source: Mapped[VacationSource] = mapped_column(_enum(VacationSource, "vacation_source"))
+    gcal_event_id: Mapped[str | None] = mapped_column(sa.String(255), unique=True, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(sa.DateTime, default=_now)
+    updated_at: Mapped[datetime] = mapped_column(sa.DateTime, default=_now, onupdate=_now)
+    user: Mapped[User] = relationship()
+
+
+class Substitute(Base):
+    __tablename__ = "substitutes"
+    slot_id: Mapped[int] = mapped_column(sa.ForeignKey("slots.id"), primary_key=True)
+    date: Mapped[dt.date] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(sa.ForeignKey("users.id"), primary_key=True)
+
+
+class SyncState(Base):
+    __tablename__ = "sync_state"
+    id: Mapped[int] = mapped_column(primary_key=True)  # always 1
+    last_ok_at: Mapped[datetime | None] = mapped_column(sa.DateTime, nullable=True)
+    error_since: Mapped[datetime | None] = mapped_column(sa.DateTime, nullable=True)
+    error: Mapped[str | None] = mapped_column(sa.String(500), nullable=True)
+    unmatched: Mapped[list] = mapped_column(sa.JSON, default=list)
