@@ -1,31 +1,57 @@
 "use client";
 import { useState } from "react";
-import type { Beeper } from "@/lib/timer/audio";
+import { type Beeper, SOUNDS, type SoundId, isSoundId } from "@/lib/timer/audio";
 import { KEYS, load, save } from "@/lib/timer/storage";
 
 export function loadAudio(b: Beeper) {
-  const a = load(KEYS.audio, { volume: 0.7, muted: false });
+  const a = load<Record<string, unknown>>(KEYS.audio, {});
   b.set(typeof a.volume === "number" ? a.volume : 0.7, !!a.muted);
+  b.setSounds(isSoundId(a.start) ? a.start : b.startSound, isSoundId(a.rest) ? a.rest : b.restSound);
 }
+
+const SELECT = "min-h-14 rounded-xl border border-[#2B3A5E] bg-[#0B1220] px-2 text-[#F4F7FF]";
 
 export function AudioControls({ beeper }: { beeper: Beeper }) {
   const [vol, setVol] = useState(beeper.volume);
   const [muted, setMuted] = useState(beeper.muted);
-  const commit = (volume: number, m: boolean) => {
-    beeper.set(volume, m);
-    setVol(volume); setMuted(m);
-    save(KEYS.audio, { volume, muted: m });
+  const [start, setStart] = useState(beeper.startSound);
+  const [rest, setRest] = useState(beeper.restSound);
+  const persist = (o: { volume?: number; muted?: boolean; start?: SoundId; rest?: SoundId }) => {
+    const n = { volume: vol, muted, start, rest, ...o };
+    beeper.set(n.volume, n.muted);
+    beeper.setSounds(n.start, n.rest);
+    setVol(n.volume); setMuted(n.muted); setStart(n.start); setRest(n.rest);
+    save(KEYS.audio, n);
+  };
+  // Selecting is a user gesture: unlock audio and preview the sound.
+  const pick = (kind: "start" | "rest", v: string) => {
+    if (!isSoundId(v)) return;
+    persist({ [kind]: v });
+    beeper.unlock();
+    beeper.play(v);
   };
   return (
-    <div className="flex items-center gap-3">
-      <button type="button" aria-pressed={muted} onClick={() => commit(vol, !muted)}
+    <div className="flex flex-wrap items-center gap-3">
+      <button type="button" aria-pressed={muted} onClick={() => persist({ muted: !muted })}
         className="min-h-14 min-w-14 rounded-xl border border-[#2B3A5E] bg-[#131C33] px-3">
         {muted ? "🔇 Stumm" : "🔊 Ton"}
       </button>
       <label className="flex items-center gap-2 text-sm text-[#9FB0D6]">
         Lautstärke
         <input type="range" min={0} max={1} step={0.05} value={vol} aria-label="Lautstärke"
-          onChange={(e) => commit(Number(e.target.value), muted)} />
+          onChange={(e) => persist({ volume: Number(e.target.value) })} />
+      </label>
+      <label className="flex items-center gap-2 text-sm text-[#9FB0D6]">
+        Ton Rundenstart
+        <select className={SELECT} value={start} onChange={(e) => pick("start", e.target.value)}>
+          {Object.entries(SOUNDS).map(([id, l]) => <option key={id} value={id}>{l}</option>)}
+        </select>
+      </label>
+      <label className="flex items-center gap-2 text-sm text-[#9FB0D6]">
+        Ton Pause
+        <select className={SELECT} value={rest} onChange={(e) => pick("rest", e.target.value)}>
+          {Object.entries(SOUNDS).map(([id, l]) => <option key={id} value={id}>{l}</option>)}
+        </select>
       </label>
     </div>
   );
