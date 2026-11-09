@@ -1,4 +1,4 @@
-from datetime import date, time
+from datetime import date, datetime, time
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -217,3 +217,11 @@ class TodayOut(BaseModel):
     weekday: int
     days: list[DayOut]
     next_week: str | None
+
+
+class SyncOut(BaseModel):
+    enabled: bool
+    ok: bool
+    error_since: datetime | None
+    last_ok_at: datetime | None
+    unmatched: list[str]
