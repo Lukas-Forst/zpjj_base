@@ -190,6 +190,22 @@ class VacationOut(BaseModel):
     source: str
 
 
+class GapOut(BaseModel):
+    date: date
+    slot_id: int
+    weekday: int
+    start_time: time
+    kind: SlotKind
+    level: str  # unbesetzt | teilweise
+    absent: list[str]
+
+
+class SubstituteIn(BaseModel):
+    slot_id: int
+    date: date
+    user_id: int | None = None
+
+
 class DayOut(BaseModel):
     weekday: int  # 0 = Montag
     topics: list[str]
