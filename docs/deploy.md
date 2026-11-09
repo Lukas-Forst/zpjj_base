@@ -67,3 +67,7 @@ Die Base gleicht Urlaub in beide Richtungen mit einem gemeinsamen Kalender ab (T
 5. Prüfen: Auf der Seite `/urlaub/` Urlaub eintragen, der Termin erscheint im Kalender. Bei Problemen zeigt die Base "Kalender-Sync fehlgeschlagen seit …" (Abgleich alle 15 Minuten und nach jeder Änderung).
 
 Verhalten: Von der Base angelegte Termine werden bei Löschung oder Änderung von Hand im Kalender wiederhergestellt. Von Hand angelegte "Vorname Urlaub"-Termine werden eingelesen. Nicht zuordenbare Titel erscheinen unter "Nicht zugeordnete Kalendereinträge".
+
+## Lokal testen
+
+`apps/dev.sh` baut die Oberfläche, legt `apps/api/dev.db` an, seedet den Stundenplan (mit den Platzhalter-Nutzern aus `users.example.yaml`, falls `users.local.yaml` fehlt) und startet API (:8000) und Oberfläche (:3000), eingeloggt als `lukas@example.invalid` (änderbar mit `AUTH_DEV_EMAIL=…`). Trello-Werte liest das Skript aus `api_key.md` (`TRELLO_KEY=`, `TRELLO_TOKEN=`). Nach Frontend-Änderungen das Skript neu starten.
