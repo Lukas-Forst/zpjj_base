@@ -25,6 +25,12 @@ export function TodayStrip() {
         <span className="text-sm">{text}</span>
       </button>
       <dialog ref={dlg} className="m-auto w-[min(92vw,28rem)] rounded-2xl p-5">
+        {t.month_theme && (
+          <div className="mb-4 rounded-xl bg-neutral-100 p-3">
+            <div className="text-sm font-semibold text-neutral-600">Monatsthema</div>
+            <div className="whitespace-pre-line">{t.month_theme}</div>
+          </div>
+        )}
         <h2 className="mb-3 text-lg font-semibold">Woche {t.week}</h2>
         {t.days.map((d) => (
           <div key={d.weekday} className={`mb-2 ${d.weekday === t.weekday ? "font-semibold" : ""}`}>

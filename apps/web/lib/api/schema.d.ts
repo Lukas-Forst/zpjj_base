@@ -488,6 +488,8 @@ export interface components {
             days: components["schemas"]["DayOut"][];
             /** Next Week */
             next_week: string | null;
+            /** Month Theme */
+            month_theme?: string | null;
         };
         /** TrainerIds */
         TrainerIds: {

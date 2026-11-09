@@ -227,6 +227,7 @@ class TodayOut(BaseModel):
     weekday: int
     days: list[DayOut]
     next_week: str | None
+    month_theme: str | None = None
 
 
 class SyncOut(BaseModel):

@@ -70,6 +70,27 @@ def test_parse_week_markdown_bold_headers():
                           "_Tim vertritt Nico_ Straight Jacket\n\n**Freitag**\nA\nGi: B\n"
                           "\n**Folgewoche:** Fokus Turtle")
     assert r["days"][0]["topics"] == ["Straight Jacket, 4 Point"]
-    assert r["days"][3]["topics"] == ["_Tim vertritt Nico_ Straight Jacket"]
+    assert r["days"][3]["topics"] == ["Tim vertritt Nico Straight Jacket"]
     assert r["days"][4]["topics"] == ["A", "Gi: B"]
     assert r["next_week"] == "Fokus Turtle"
+
+
+def test_clean_md():
+    assert trello.clean_md("**Back Control**\n\n- Straight Jacket\n- Control") == \
+        "Back Control\n\n• Straight Jacket\n• Control"
+    assert trello.clean_md("_Tim vertritt Nico_ Straight Jacket") == "Tim vertritt Nico Straight Jacket"
+    assert trello.clean_md("foo_bar_baz") == "foo_bar_baz"
+
+
+def test_month_theme_in_week_data():
+    from datetime import date
+    trello._cache.clear()
+    lists = [{"name": "Technik", "cards": [
+        {"name": "Themen November", "desc": "**Rear Bodylock**\n- Throws"},
+        {"name": "Woche 46", "desc": "**Montag**\n_Tim_ A"}]}]
+    r = trello.week_data(lambda: lists, date(2026, 11, 9))
+    assert r["month_theme"] == "Rear Bodylock\n• Throws"
+    assert r["days"][0]["topics"] == ["Tim A"]
+    trello._cache.clear()
+    r = trello.week_data(lambda: lists, date(2026, 12, 7))  # no December card
+    assert r["month_theme"] is None
