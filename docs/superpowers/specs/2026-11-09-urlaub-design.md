@@ -37,7 +37,7 @@ Das Team trägt Urlaub heute als Termin "Vorname Urlaub" in einen gemeinsamen Go
 - Genaue Tabellen und Endpunkte, Form der Warnung in der UI, Sync-Takt, Art der Google-Authentifizierung (Service-Account bevorzugt), Behandlung von Löschungen und Änderungen auf beiden Seiten (z. B. ID des Base-Eintrags in `extendedProperties` des Termins), Tests mit simuliertem Google.
 
 ## Festlegungen aus der Prüfung (Entscheidungen des Entwurfs, vom Auftraggeber zu prüfen)
-- **Warnregel:** Nur aktive Slots mit mindestens einem aktiven Trainer (`active`, `is_trainer`) werden geprüft. Slots ohne Trainer lösen keine Warnung aus.
+- **Warnregel:** Nur aktive Slots der Art `no_gi` oder `gi` mit mindestens einem aktiven Trainer (`active`, `is_trainer`) werden geprüft. `open_mat` und Slots ohne Trainer lösen keine Warnung aus.
 - **Sync-Richtung und Löschungen:** Jeder Urlaub hat eine Herkunft (`base` oder `calendar`).
   - Base-Einträge sind maßgeblich. Wird ein Base-Termin im Kalender von Hand gelöscht oder geändert, stellt der nächste Sync ihn wieder her.
   - Kalender-Einträge (Herkunft `calendar`) verschwinden aus der Base nur nach einem **erfolgreichen** Abruf, der sie nicht mehr enthält. Bei einem Fehler bleibt alles unverändert.
@@ -48,5 +48,5 @@ Das Team trägt Urlaub heute als Termin "Vorname Urlaub" in einen gemeinsamen Go
 - **Hinweise nur in der App**, keine E-Mail oder Push (Push ist laut Plan Nicht-Ziel).
 
 ## Noch offen (nur der Auftraggeber kann antworten)
-1. ~~Open Mat~~ Beantwortet: `open_mat` wird nicht geprüft, **außer am Sonntag**: dort warnt die Base, wenn kein Trainer verfügbar ist (Lesart des Entwurfs: der Sonntags-Open-Mat hat keinen festen Trainer, geprüft wird, ob mindestens ein aktiver Trainer nicht im Urlaub ist). Die Frage, ob die feste Slot-Zuordnung stimmt, wurde nicht beantwortet; Entwurf geht davon aus, dass sie stimmt.
+1. ~~Open Mat~~ Beantwortet: `open_mat` wird nie geprüft. Am Sonntag deckt der Trainer der Vormittagseinheiten (10:00–11:30, laut Plan Tim und Lukas) den Open Mat mit ab, also reicht die normale Prüfung dieser beiden Slots. Die Frage, ob die feste Slot-Zuordnung stimmt, wurde nicht beantwortet; der Entwurf geht davon aus, dass sie stimmt.
 2. Enthält der bestehende Kalender Sonderformate (z. B. "Nico Urlaub 3 Tage", Einträge mit Uhrzeit), und kann der Kalender mit einem Service-Account geteilt werden?
