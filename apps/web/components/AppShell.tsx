@@ -26,6 +26,7 @@ export function AppShell({ children, dark = false }: { children: React.ReactNode
   const links = me.role === "gesellschafter" ? [...LINKS, { href: "/admin/nutzer/", label: "Nutzer verwalten" }] : LINKS;
   return (
     <MeContext.Provider value={me}>
+      <div className={dark ? "min-h-dvh bg-[#0B1220] text-[#F4F7FF]" : ""}>
       <header className={`sticky top-0 z-10 flex items-center justify-between border-b px-4 py-3 ${dark ? "border-[#2B3A5E] bg-[#131C33] text-[#F4F7FF]" : "border-divider bg-background"}`}>
         <Drawer>
           <Drawer.Trigger className="min-h-11 min-w-11 rounded-lg px-3 text-xl" aria-label="Menü öffnen">☰</Drawer.Trigger>
@@ -48,6 +49,7 @@ export function AppShell({ children, dark = false }: { children: React.ReactNode
         <Button variant="secondary" aria-label={`Konto: ${me.display_name}`} isDisabled>{me.display_name}</Button>
       </header>
       {children}
+      </div>
     </MeContext.Provider>
   );
 }

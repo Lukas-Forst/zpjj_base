@@ -1,0 +1,16 @@
+import { expect, it } from "vitest";
+import { DEFAULT_FORM, fromPreset, sanitize, toConfig } from "@/lib/timer/form";
+
+it("clamps to limits: rounds 1..99, times up to 99:59, pause may be 0", () => {
+  const f = sanitize({ ...DEFAULT_FORM, rounds: 500, work: 99999, rest: -4, prep: NaN, duration: 0 });
+  expect(f).toMatchObject({ rounds: 99, work: 5999, rest: 0, prep: 0, duration: 1 });
+});
+
+it("builds mode specific configs", () => {
+  expect(toConfig({ ...DEFAULT_FORM, mode: "stopwatch" })).toEqual({ mode: "stopwatch" });
+  expect(toConfig({ ...DEFAULT_FORM, mode: "countdown" })).toEqual({ mode: "countdown", duration: 300 });
+});
+
+it("fromPreset tolerates garbage", () => {
+  expect(fromPreset({ mode: "wat", config: { rounds: "x", work: 20 } })).toMatchObject({ mode: "rounds", rounds: 5, work: 20 });
+});

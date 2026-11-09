@@ -6,3 +6,12 @@
   --accent-foreground: #ffffff;
   --brand-red: #d0121a; /* logo and small accents only, never actions */
 }
+
+@keyframes pulse-amber {
+  0%, 100% { color: #f4f7ff; }
+  50% { color: #f5b942; }
+}
+.timer-last10 { animation: pulse-amber 1s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .timer-last10 { animation: none; color: #f5b942; }
+}

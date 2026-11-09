@@ -28,6 +28,7 @@ Die API bricht beim Start ab, wenn `AUTH_DEV_EMAIL` gesetzt und `ENV` nicht `dev
 ```bash
 fly ssh sftp shell      # put seed/users.local.yaml /srv/seed/users.local.yaml
 fly ssh console -C "python -m app.cli seed-schedule"
+fly ssh console -C "python -m app.cli seed-presets"   # 4 Beispiel-Presets ("(Beispiel)"), das Team passt sie im Timer an
 ```
 
 ## 3. Cloudflare Pages (manuell)
