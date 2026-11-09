@@ -35,3 +35,18 @@ Das Team trägt Urlaub heute als Termin "Vorname Urlaub" in einen gemeinsamen Go
 
 ## Dem Builder überlassen
 - Genaue Tabellen und Endpunkte, Form der Warnung in der UI, Sync-Takt, Art der Google-Authentifizierung (Service-Account bevorzugt), Behandlung von Löschungen und Änderungen auf beiden Seiten (z. B. ID des Base-Eintrags in `extendedProperties` des Termins), Tests mit simuliertem Google.
+
+## Festlegungen aus der Prüfung (Entscheidungen des Entwurfs, vom Auftraggeber zu prüfen)
+- **Warnregel:** Nur aktive Slots mit mindestens einem aktiven Trainer (`active`, `is_trainer`) werden geprüft. Slots ohne Trainer lösen keine Warnung aus.
+- **Sync-Richtung und Löschungen:** Jeder Urlaub hat eine Herkunft (`base` oder `calendar`).
+  - Base-Einträge sind maßgeblich. Wird ein Base-Termin im Kalender von Hand gelöscht oder geändert, stellt der nächste Sync ihn wieder her.
+  - Kalender-Einträge (Herkunft `calendar`) verschwinden aus der Base nur nach einem **erfolgreichen** Abruf, der sie nicht mehr enthält. Bei einem Fehler bleibt alles unverändert.
+  - Ein fehlgeschlagener Sync zeigt in der Base sichtbar "Sync fehlgeschlagen seit …".
+- **Kalenderformate:** Mehrtägige Ganztagstermine werden übernommen (Googles Ende ist exklusiv). Termine mit Uhrzeit zählen als der jeweilige Tag. Wiederholungen werden nicht aufgelöst. Einträge, die nicht zu einem Nutzer passen oder nicht lesbar sind, werden **sichtbar** als "nicht zugeordnet" gemeldet, nicht still ignoriert. Bei doppelten Vornamen wird ebenfalls gemeldet.
+- **Vertretung:** Jeder Trainer kann sich selbst eintragen oder austragen, ein Gesellschafter auch für andere. Wer selbst Urlaub hat, kann nicht einspringen. Vertretungen werden nicht in den Kalender geschrieben. Fällt der zugehörige Urlaub weg, wird die Vertretung hinfällig, aber nicht gelöscht.
+- **Rechte:** Vergangenen Urlaub kann nur ein Gesellschafter ändern. Überlappende Einträge derselben Person werden zusammengeführt.
+- **Hinweise nur in der App**, keine E-Mail oder Push (Push ist laut Plan Nicht-Ziel).
+
+## Noch offen (nur der Auftraggeber kann antworten)
+1. Stimmt die feste Zuordnung Slot → Trainer aus dem Stundenplan als Grundlage der Warnung? Wird `open_mat` mitgeprüft?
+2. Enthält der bestehende Kalender Sonderformate (z. B. "Nico Urlaub 3 Tage", Einträge mit Uhrzeit), und kann der Kalender mit einem Service-Account geteilt werden?
