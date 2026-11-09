@@ -167,3 +167,16 @@ class PresetPatch(BaseModel):
     sort_order: int | None = None
 
     _n = field_validator("name")(lambda v: v if v is None else _name(v))
+
+
+class DayOut(BaseModel):
+    weekday: int  # 0 = Montag
+    topics: list[str]
+
+
+class TodayOut(BaseModel):
+    status: str  # ok | no_card | unconfigured | error
+    week: int
+    weekday: int
+    days: list[DayOut]
+    next_week: str | None

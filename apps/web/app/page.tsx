@@ -1,5 +1,6 @@
 "use client";
 import { AppShell, roleLabel, useCurrentMe } from "@/components/AppShell";
+import { TodayStrip } from "@/components/TodayStrip";
 import { TileGrid } from "@/components/TileGrid";
 
 const env = {
@@ -13,6 +14,7 @@ function Home() {
     <main className="mx-auto max-w-4xl p-4">
       <h1 className="text-xl font-semibold">Hallo {me.display_name}</h1>
       <p className="mb-4 text-sm text-neutral-600">{roleLabel(me)}</p>
+      <TodayStrip />
       <TileGrid role={me.role} env={env} />
     </main>
   );

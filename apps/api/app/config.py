@@ -11,6 +11,9 @@ class Settings:
     bootstrap_admin_emails: tuple[str, ...] = ()
     auth_dev_email: str = ""
     base_proxy_secret: str = ""
+    trello_key: str = ""
+    trello_token: str = ""
+    trello_board: str = ""
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -25,6 +28,9 @@ class Settings:
             ),
             auth_dev_email=e("AUTH_DEV_EMAIL", "").strip().lower(),
             base_proxy_secret=e("BASE_PROXY_SECRET", ""),
+            trello_key=e("TRELLO_KEY", ""),
+            trello_token=e("TRELLO_TOKEN", ""),
+            trello_board=e("TRELLO_BOARD", ""),
         )
 
     def validate(self) -> None:

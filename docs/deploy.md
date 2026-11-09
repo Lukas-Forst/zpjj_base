@@ -47,3 +47,10 @@ fly ssh console -C "python -m app.cli seed-presets"   # 4 Beispiel-Presets ("(Be
 3. Flugmodus an, App neu starten: Startseite lädt, `/timer/` läuft inkl. gecachter Presets.
 4. Kontrolle in DevTools → Application → Service Workers / Cache Storage `base-v1`.
 Hinweis: Ist die Access-Session abgelaufen, braucht der erste Aufruf wieder Netz (One-Time-PIN).
+
+## Trello ("Heute"-Streifen, M2)
+
+Nur lesend. Fly-Secrets setzen (nie ins Repo):
+`fly secrets set TRELLO_KEY=… TRELLO_TOKEN=… TRELLO_BOARD=<Board-ID oder Shortlink> -a zpjj-base-api`
+Token mit `read`-Scope: `https://trello.com/1/authorize?key=<KEY>&scope=read&expiration=never&response_type=token&name=ZPJJ%20Base`.
+Erwartet: Liste "Technik", Karte "Woche NN" (ISO-Kalenderwoche), Beschreibung mit Zeilen "Montag" … "Sonntag" und optional "Folgewoche: …". Ohne die drei Variablen bleibt der Streifen unsichtbar. Cache 10 Minuten im Speicher.
