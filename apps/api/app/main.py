@@ -11,7 +11,7 @@ from app.auth import JWKSCache
 from app.config import Settings
 from app.db import make_engine, make_session_factory
 from app.models import Role, User
-from app.routers import me, presets, slots, today, users
+from app.routers import me, presets, slots, today, users, vacations
 
 log = logging.getLogger("base")
 
@@ -63,7 +63,7 @@ def create_app(settings: Settings | None = None, jwks: JWKSCache | None = None) 
     def healthz():
         return {"ok": True}
 
-    for r in (me.router, slots.router, users.router, presets.router, today.router):
+    for r in (me.router, slots.router, users.router, presets.router, today.router, vacations.router):
         app.include_router(r, prefix="/api")
     return app
 
