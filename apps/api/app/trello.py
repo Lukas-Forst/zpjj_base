@@ -16,13 +16,14 @@ def parse_week(desc: str) -> dict:
     cur: list[str] | None = None
     next_week = None
     for raw in desc.splitlines():
-        line = raw.strip().lstrip("#*- ").strip()
+        line = raw.strip()
+        head = line.strip("#*_ :")  # Trello markdown: **Montag**, # Montag, Montag:
         if not line:
             continue
-        if line.rstrip(":") in DAYS:
-            cur = days.setdefault(line.rstrip(":"), [])
-        elif line.lower().startswith("folgewoche"):
-            next_week = line.split(":", 1)[-1].strip() or None
+        if head in DAYS:
+            cur = days.setdefault(head, [])
+        elif head.lower().startswith("folgewoche"):
+            next_week = head.split(":", 1)[-1].strip(" *_") or None
             cur = None
         elif cur is not None:
             cur.append(line)

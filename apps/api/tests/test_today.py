@@ -63,3 +63,13 @@ def test_endpoint(app, client, add_user, as_user):
     app.state.trello_fetch = lambda: []
     assert client.get("/api/today", headers=h).json()["status"] == "no_card"
     assert client.get("/api/today").status_code in (401, 403)
+
+
+def test_parse_week_markdown_bold_headers():
+    r = trello.parse_week("**Montag**\nStraight Jacket, 4 Point\n\n**Donnerstag**\n"
+                          "_Tim vertritt Nico_ Straight Jacket\n\n**Freitag**\nA\nGi: B\n"
+                          "\n**Folgewoche:** Fokus Turtle")
+    assert r["days"][0]["topics"] == ["Straight Jacket, 4 Point"]
+    assert r["days"][3]["topics"] == ["_Tim vertritt Nico_ Straight Jacket"]
+    assert r["days"][4]["topics"] == ["A", "Gi: B"]
+    assert r["next_week"] == "Fokus Turtle"
