@@ -15,6 +15,7 @@ from app.schemas import (
     AttendanceOverview,
     AttendanceParseIn,
     AttendanceParseOut,
+    MissingOut,
     WeekdayAvg,
 )
 
@@ -73,7 +74,7 @@ def overview(days: int = Query(60, ge=1, le=400), _: User = Depends(current_user
         avg_by_weekday=[WeekdayAvg(weekday=i + 1, avg=v) for i, v in enumerate(by_wd)])
 
 
-@router.get("/missing")
+@router.get("/missing", response_model=MissingOut)
 def missing(_: User = Depends(current_user), db: Session = Depends(get_db)):
     today = today_berlin()
     open_days = set(db.scalars(select(Slot.weekday).where(Slot.active)))

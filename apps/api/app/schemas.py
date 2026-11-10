@@ -280,3 +280,7 @@ class AttendanceOverview(BaseModel):
     entries: list[AttendanceOut]
     avg_14d: float | None
     avg_by_weekday: list[WeekdayAvg]
+
+
+class MissingOut(BaseModel):
+    date: date | None

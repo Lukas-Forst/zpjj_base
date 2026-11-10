@@ -70,3 +70,8 @@ def test_missing_none_when_recorded_or_cancelled(client, app, h):
 def test_auth_required(client):
     assert client.get("/api/attendance").status_code == 401
     assert client.get("/api/attendance/missing").status_code == 401
+
+
+def test_missing_has_response_model(client, h):
+    props = client.app.openapi()["components"]["schemas"]["MissingOut"]["properties"]
+    assert set(props) == {"date"}

@@ -457,6 +457,11 @@ export interface components {
             /** Is Trainer */
             is_trainer: boolean;
         };
+        /** MissingOut */
+        MissingOut: {
+            /** Date */
+            date: string | null;
+        };
         /** PresetCreate */
         PresetCreate: {
             /** Name */
@@ -815,7 +820,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["MissingOut"];
                 };
             };
         };
