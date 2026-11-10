@@ -5,7 +5,7 @@ Browser → `base.zpjj.de` (Cloudflare Access) → ein Cloudflare Worker `zpjj-b
 **Wichtige Warnungen**
 - `ENV` darf auf dem Produktiv-Worker **nie** auf `test` oder `dev` stehen. `ENV=test` ließe jeden per Header einloggen, `dev` beachtet `AUTH_DEV_EMAIL`. Erlaubt ist nur der Wert `prod` aus `wrangler.jsonc`. Kein `wrangler secret put ENV`, keine Variable im Dashboard, kein `--var` beim Deploy.
 - Der Worker darf nicht über `workers.dev` erreichbar sein (`"workers_dev": false` in `wrangler.jsonc` lassen). Die Access-Application muss die Custom Domain `base.zpjj.de` abdecken, sonst ist die API ohne Login-Schutz der Domain nur durch die JWT-Prüfung gesichert.
-- Zwischen dem ersten `wrangler deploy` und dem Setzen der Secrets antwortet der Worker mit 500 (fail closed): Die Einstellungsprüfung läuft nicht ohne `CF_ACCESS_*`. Sicheres Vorgehen: Meldet `wrangler secret put`, dass der Worker nicht gefunden wurde, zuerst `wrangler deploy` ausführen. Der Worker bleibt dabei geschlossen: `/api/*` antwortet mit 500 `Interner Fehler.`, die statischen Seiten sind öffentlich, enthalten aber keine Daten. Danach die Secrets setzen, erst dann funktioniert der Worker.
+- Zwischen dem ersten `wrangler deploy` und dem Setzen der Secrets antwortet der Worker mit 500 (fail closed): Die Einstellungsprüfung läuft nicht ohne `CF_ACCESS_*`. Sicheres Vorgehen: Meldet `wrangler secret put`, dass der Worker nicht gefunden wurde, zuerst `wrangler deploy` ausführen. Der Worker bleibt dabei geschlossen: `/api/*` antwortet mit 500 `Interner Fehler.`, die statischen Seiten liegen hinter der Access-Anmeldung und enthalten keine Daten. Danach die Secrets setzen, erst dann funktioniert der Worker.
 
 ## 0. Voraussetzungen
 1. Cloudflare-Account, Domain `zpjj.de` liegt in Cloudflare DNS.
@@ -25,24 +25,8 @@ npx wrangler d1 create zpjj-base          # gibt database_id aus
 1. `database_id` in `apps/worker/wrangler.jsonc` statt `<set at deploy>` eintragen und committen (die ID ist kein Geheimnis).
 2. Migrationen anwenden: `npx wrangler d1 migrations apply zpjj-base --remote`. Neue Migrationen (SQL-Dateien in `apps/worker/migrations`) nach jeder Änderung am Schema mit demselben Befehl einspielen, vor dem Deploy.
 
-## 3. Secrets
-```bash
-npx wrangler secret put CF_ACCESS_TEAM_DOMAIN    # <team>.cloudflareaccess.com
-npx wrangler secret put CF_ACCESS_AUD            # AUD-Tag aus Schritt 1
-npx wrangler secret put BOOTSTRAP_ADMIN_EMAILS   # admin1@…,admin2@…
-```
-`BOOTSTRAP_ADMIN_EMAILS`: Diese Adressen werden bei ihrer ersten Anfrage als Gesellschafter angelegt. Jede andere noch nicht angelegte E-Mail bekommt 403, bis ein Admin sie anlegt (Seite Nutzer) oder der Seed (Schritt 5) sie erzeugt. Empfohlene Reihenfolge: erst den Seed (Schritt 5), dann der erste Login; so sind Team-Adressen und Rollen aus der Datei von Anfang an da. Der Seed nutzt INSERT OR IGNORE und überschreibt nie bestehende Nutzer: Wer vorher per Bootstrap angelegt wurde, behält Anzeigename = Teil der E-Mail vor dem @ und `is_trainer = 0`, der Seed korrigiert das nicht. Deshalb den Seed VOR dem ersten Login ausführen. Hat sich jemand schon eingeloggt, lassen sich Rolle und Trainer-Häkchen auf der Seite `/admin/nutzer/` ändern; den Anzeigenamen kann diese Seite nicht ändern.
-Jeder Befehl fragt den Wert interaktiv ab (nie ins Repo). Trello und Google Calendar siehe unten. `AUTH_DEV_EMAIL` und `ENV` nie setzen.
-
-## 4. Deployen
-Das Deployen ist nur manuell, es gibt kein Deploy in der CI. `wrangler deploy` braucht ein frisch gebautes `apps/web/out`: immer zuerst `npm run build` in `apps/web`, sonst schlägt der Deploy fehl oder liefert alte Dateien aus.
-```bash
-cd apps/web && npm ci && npm run build      # erzeugt apps/web/out
-cd ../worker && npx wrangler deploy
-```
-Der Deploy legt den Cron-Trigger (alle 15 Minuten, Kalender-Abgleich) und die Custom Domain `base.zpjj.de` an (DNS-Eintrag macht Cloudflare). Optional beim Web-Build: `NEXT_PUBLIC_PRODUCTION_PLANNER_URL`, `NEXT_PUBLIC_CRM_URL` (fehlen sie, sind die Kacheln deaktiviert). Danach `https://base.zpjj.de/healthz` prüfen (nach dem Access-Login).
-
-## 5. Stundenplan seeden (einmalig, idempotent)
+## 3. Stundenplan seeden (einmalig, idempotent, vor Secrets und Deploy)
+Die D1-Datenbank existiert nach Schritt 2; der Seed läuft direkt gegen sie, der Worker muss noch nicht deployt sein. So ist der Seed strukturell vor dem ersten Login erledigt.
 `apps/worker/seed/users.local.yaml` aus `users.example.yaml` anlegen (echte Adressen, nicht committen), dann
 ```bash
 cd apps/worker
@@ -51,6 +35,24 @@ npx wrangler d1 execute zpjj-base --remote --file seed.sql
 rm seed.sql
 ```
 Der Seed legt auch die zwei Rheinheim-Einheiten an (Mo und Mi, 19:30–21:30 No-Gi, Ort "Rheinheim"). Bestehende Einheiten fasst er nicht an: Auf einem schon befüllten System danach auf der Seite **Stundenplan** beim Mittwoch 20:00 (Hauptstandort) Tim als Trainer entfernen, sodass nur Chris übrig bleibt.
+
+## 4. Secrets
+```bash
+npx wrangler secret put CF_ACCESS_TEAM_DOMAIN    # <team>.cloudflareaccess.com
+npx wrangler secret put CF_ACCESS_AUD            # AUD-Tag aus Schritt 1
+npx wrangler secret put BOOTSTRAP_ADMIN_EMAILS   # admin1@…,admin2@…
+```
+`BOOTSTRAP_ADMIN_EMAILS`: Diese Adressen werden bei ihrer ersten Anfrage als Gesellschafter angelegt. Jede andere noch nicht angelegte E-Mail bekommt 403, bis ein Admin sie anlegt (Seite Nutzer) oder der Seed (Schritt 3) sie erzeugt. Die Reihenfolge der Schritte stellt sicher, dass der Seed vor dem ersten Login läuft; so sind Team-Adressen und Rollen aus der Datei von Anfang an da. Der Seed nutzt INSERT OR IGNORE und überschreibt nie bestehende Nutzer: Wer vorher per Bootstrap angelegt wurde, behält Anzeigename = Teil der E-Mail vor dem @ und `is_trainer = 0`, der Seed korrigiert das nicht. Deshalb den Seed VOR dem ersten Login ausführen. Hat sich jemand schon eingeloggt, lassen sich Rolle und Trainer-Häkchen auf der Seite `/admin/nutzer/` ändern; den Anzeigenamen kann diese Seite nicht ändern.
+Bei der Erstinstallation siehe die Warnung oben (zuerst `wrangler deploy`, falls wrangler meldet, dass der Worker nicht gefunden wurde).
+Jeder Befehl fragt den Wert interaktiv ab (nie ins Repo). Trello und Google Calendar siehe unten. `AUTH_DEV_EMAIL` und `ENV` nie setzen.
+
+## 5. Deployen
+Das Deployen ist nur manuell, es gibt kein Deploy in der CI. `wrangler deploy` braucht ein frisch gebautes `apps/web/out`: immer zuerst `npm run build` in `apps/web`, sonst schlägt der Deploy fehl oder liefert alte Dateien aus.
+```bash
+cd apps/web && npm ci && npm run build      # erzeugt apps/web/out
+cd ../worker && npx wrangler deploy
+```
+Der Deploy legt den Cron-Trigger (alle 15 Minuten, Kalender-Abgleich) und die Custom Domain `base.zpjj.de` an (DNS-Eintrag macht Cloudflare). Optional beim Web-Build: `NEXT_PUBLIC_PRODUCTION_PLANNER_URL`, `NEXT_PUBLIC_CRM_URL` (fehlen sie, sind die Kacheln deaktiviert). Danach `https://base.zpjj.de/healthz` prüfen (nach dem Access-Login).
 
 ## 6. Anwesenheit: Excel-Import (einmalig)
 Die Datei liegt lokal, es wird nichts hochgeladen. Vorhandene Tage bleiben unberührt, mehrfaches Ausführen ist unschädlich:
