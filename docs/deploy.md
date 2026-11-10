@@ -5,7 +5,7 @@ Browser → `base.zpjj.de` (Cloudflare Access) → ein Cloudflare Worker `zpjj-b
 **Wichtige Warnungen**
 - `ENV` darf auf dem Produktiv-Worker **nie** auf `test` oder `dev` stehen. `ENV=test` ließe jeden per Header einloggen, `dev` beachtet `AUTH_DEV_EMAIL`. Erlaubt ist nur der Wert `prod` aus `wrangler.jsonc`. Kein `wrangler secret put ENV`, keine Variable im Dashboard, kein `--var` beim Deploy.
 - Der Worker darf nicht über `workers.dev` erreichbar sein (`"workers_dev": false` in `wrangler.jsonc` lassen). Die Access-Application muss die Custom Domain `base.zpjj.de` abdecken, sonst ist die API ohne Login-Schutz der Domain nur durch die JWT-Prüfung gesichert.
-- Zwischen dem ersten `wrangler deploy` und dem Setzen der Secrets antwortet der Worker mit 500 (fail closed): Die Einstellungsprüfung läuft nicht ohne `CF_ACCESS_*`. Sichere Reihenfolge: erst Secrets mit `wrangler secret put` setzen (das legt den Worker bei Bedarf an), dann deployen. Wer zuerst deployt, nimmt die 500er bis zum Setzen der Secrets in Kauf.
+- Zwischen dem ersten `wrangler deploy` und dem Setzen der Secrets antwortet der Worker mit 500 (fail closed): Die Einstellungsprüfung läuft nicht ohne `CF_ACCESS_*`. Sichere Reihenfolge: erst Secrets mit `wrangler secret put` setzen (wrangler fragt, ob der Worker neu angelegt werden soll: mit Ja bestätigen), dann deployen. Wer zuerst deployt, nimmt die 500er bis zum Setzen der Secrets in Kauf.
 
 ## 0. Voraussetzungen
 1. Cloudflare-Account, Domain `zpjj.de` liegt in Cloudflare DNS.
@@ -31,9 +31,11 @@ npx wrangler secret put CF_ACCESS_TEAM_DOMAIN    # <team>.cloudflareaccess.com
 npx wrangler secret put CF_ACCESS_AUD            # AUD-Tag aus Schritt 1
 npx wrangler secret put BOOTSTRAP_ADMIN_EMAILS   # admin1@…,admin2@…
 ```
+`BOOTSTRAP_ADMIN_EMAILS`: Diese Adressen werden bei ihrer ersten Anfrage als Gesellschafter angelegt. Jede andere noch nicht angelegte E-Mail bekommt 403, bis ein Admin sie anlegt (Seite Nutzer) oder der Seed (Schritt 5) sie erzeugt. Empfohlene Reihenfolge: erst den Seed (Schritt 5), dann der erste Login; so sind Team-Adressen und Rollen aus der Datei von Anfang an da. Der Seed ist idempotent und überschreibt nie bestehende Nutzer, geht also auch nach dem ersten Login.
 Jeder Befehl fragt den Wert interaktiv ab (nie ins Repo). Trello und Google Calendar siehe unten. `AUTH_DEV_EMAIL` und `ENV` nie setzen.
 
 ## 4. Deployen
+Das Deployen ist nur manuell, es gibt kein Deploy in der CI. `wrangler deploy` braucht ein frisch gebautes `apps/web/out`: immer zuerst `npm run build` in `apps/web`, sonst schlägt der Deploy fehl oder liefert alte Dateien aus.
 ```bash
 cd apps/web && npm ci && npm run build      # erzeugt apps/web/out
 cd ../worker && npx wrangler deploy
@@ -81,13 +83,14 @@ Die Base gleicht Urlaub in beide Richtungen mit einem gemeinsamen Kalender ab (T
    npx wrangler secret put GCAL_CALENDAR_ID
    npx wrangler secret put GCAL_SERVICE_ACCOUNT_JSON < schluessel.json
    ```
+   Die JSON-Datei geht samt Zeilenumbrüchen über stdin unverändert durch, kein Quoting nötig.
 5. Prüfen: Auf der Seite `/urlaub/` Urlaub eintragen, der Termin erscheint im Kalender. Bei Problemen zeigt die Base "Kalender-Sync fehlgeschlagen seit …" (Abgleich alle 15 Minuten per Cron und nach jeder Änderung).
 
 Verhalten: Von der Base angelegte Termine werden bei Löschung oder Änderung von Hand im Kalender wiederhergestellt. Von Hand angelegte "Vorname Urlaub"-Termine werden eingelesen. Nicht zuordenbare Titel erscheinen unter "Nicht zugeordnete Kalendereinträge".
 
 ## 9. Backups
 - Export: `npx wrangler d1 export zpjj-base --remote --output backup.sql` (enthält echte Daten, nicht committen). Regelmäßig ablegen, z. B. vor jeder Migration.
-- D1 Time Travel: Wiederherstellung auf einen Zeitpunkt der letzten 30 Tage (Free-Plan: 7 Tage). Stand abfragen: `npx wrangler d1 time-travel info zpjj-base`, zurückspielen: `npx wrangler d1 time-travel restore zpjj-base --timestamp=<ISO-Zeit>`.
+- D1 Time Travel: Wiederherstellung auf einen Zeitpunkt der letzten 30 Tage (laut Cloudflare-Doku, Stand bitte prüfen) (Free-Plan: 7 Tage; laut Cloudflare-Doku, Stand bitte prüfen). Stand abfragen: `npx wrangler d1 time-travel info zpjj-base`, zurückspielen: `npx wrangler d1 time-travel restore zpjj-base --timestamp=<ISO-Zeit>`.
 
 ## 10. Lokal testen
 `apps/dev.sh` baut die Oberfläche, legt eine lokale D1 in `apps/worker/.wrangler` an (Migrationen, Seed mit den Platzhalter-Nutzern aus `users.example.yaml`, falls `users.local.yaml` fehlt) und startet `wrangler dev --local` auf `http://localhost:3000`, eingeloggt als `lukas@example.invalid` (änderbar mit `AUTH_DEV_EMAIL=…`, Port mit `PORT=…`). Trello-Werte liest das Skript aus `api_key.md` (`TRELLO_KEY=`, `TRELLO_TOKEN=`). Nach Frontend-Änderungen das Skript neu starten.
@@ -100,14 +103,14 @@ Verhalten: Von der Base angelegte Termine werden bei Löschung oder Änderung vo
 Hinweis: Ist die Access-Session abgelaufen, braucht der erste Aufruf wieder Netz (One-Time-PIN).
 
 ## 12. Free-Plan-Grenzen
-- Worker: 100.000 Anfragen pro Tag, 10 ms CPU pro Aufruf (statische Dateien zählen nicht dazu). Für das Team reicht das deutlich.
-- D1: 5 GB Speicher, 5 Mio. gelesene und 100.000 geschriebene Zeilen pro Tag.
-- Cron: 15-Minuten-Takt belegt einen Cron-Trigger (Free-Plan erlaubt 5).
+- Worker: 100.000 Anfragen pro Tag, 10 ms CPU pro Aufruf (beides laut Cloudflare-Doku, Stand bitte prüfen) (statische Dateien zählen nicht dazu). Für das Team reicht das deutlich.
+- D1: 5 GB Speicher, 5 Mio. gelesene und 100.000 geschriebene Zeilen pro Tag (laut Cloudflare-Doku, Stand bitte prüfen).
+- Cron: 15-Minuten-Takt belegt einen Cron-Trigger (Free-Plan erlaubt 5, laut Cloudflare-Doku, Stand bitte prüfen).
 Aktuelle Werte in der Cloudflare-Doku prüfen; bei Überschreitung antwortet der Worker mit Fehlern bis zum nächsten Tag.
 
 ## 13. Fehlersuche
 - **403 von Access** (Cloudflare-Seite statt der App): E-Mail steht nicht in der Policy, oder die Application deckt `base.zpjj.de` nicht ab.
-- **403 "…" der App**: Die E-Mail ist angemeldet, aber kein aktiver Nutzer. Über `BOOTSTRAP_ADMIN_EMAILS` oder die Seite Nutzer anlegen.
+- **403 "Dein Zugang ist noch nicht freigeschaltet. Bitte melde dich bei den Gesellschaftern." in der App**: Die E-Mail ist angemeldet, aber kein aktiver Nutzer. Über `BOOTSTRAP_ADMIN_EMAILS` oder die Seite Nutzer anlegen.
 - **401 "Nicht angemeldet."**: Kein oder ungültiges Access-JWT. `CF_ACCESS_AUD` und `CF_ACCESS_TEAM_DOMAIN` mit der Application vergleichen (`npx wrangler secret list`).
 - **500 auf allen Seiten unter `/api`**: Secrets fehlen (`CF_ACCESS_*`) oder `AUTH_DEV_EMAIL`/`ENV` sind falsch gesetzt. Logs: `npx wrangler tail`.
 - **Weiße Seite / 404 auf Unterseiten**: `apps/web` nicht vor `wrangler deploy` gebaut (`apps/web/out` leer oder alt).

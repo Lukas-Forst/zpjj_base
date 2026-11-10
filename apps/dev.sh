@@ -11,9 +11,11 @@ PERSIST=${PERSIST_DIR:-$PWD/worker/.wrangler/state}
 cd worker
 W="npx wrangler"
 $W d1 migrations apply zpjj-base --local --persist-to "$PERSIST" >/dev/null
-SEED=$(mktemp --suffix=.sql); trap 'rm -f "$SEED"' EXIT
-npm run -s seed > "$SEED"   # users.local.yaml, sonst users.example.yaml; idempotent
-$W d1 execute zpjj-base --local --persist-to "$PERSIST" --file "$SEED" >/dev/null
+SEED=$(mktemp --suffix=.sql)   # enthält echte Adressen: sofort löschen (exec unten umgeht einen EXIT-Trap)
+rc=0
+{ npm run -s seed > "$SEED" && $W d1 execute zpjj-base --local --persist-to "$PERSIST" --file "$SEED" >/dev/null; } || rc=$?
+rm -f "$SEED"
+[ "$rc" -eq 0 ] || exit "$rc"
 VARS=(--var ENV:dev --var "AUTH_DEV_EMAIL:$EMAIL" --var "BOOTSTRAP_ADMIN_EMAILS:$EMAIL" --var "TRELLO_BOARD:${TRELLO_BOARD:-Lzg85PcJ}")
 if [ -f ../../api_key.md ]; then
   for k in TRELLO_KEY TRELLO_TOKEN; do
