@@ -15,7 +15,7 @@ export function attendanceLine(iso: string, c: Counts): string {
   const parts = [`${wd} ${deDate(iso).replace(/\.$/, "")}.`];
   if (c.total !== null) {
     parts.push(`${c.total} gesamt`, `${c.members} Mitglieder`);
-    parts.push(`${c.trials} Probetraining${c.names.length ? `: ${c.names.join(", ")}` : ""}`);
+    parts.push(`${c.trials} Probetraining${c.trials === 1 ? "" : "s"}${c.names.length ? `: ${c.names.join(", ")}` : ""}`);
   }
   if (c.open_mat !== null) parts.push(`Openmat ${c.open_mat}`);
   if (c.beginner !== null) parts.push(`Anfängerkurs ${c.beginner}`);

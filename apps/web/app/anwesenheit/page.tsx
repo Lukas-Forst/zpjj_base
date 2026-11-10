@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
@@ -23,6 +23,7 @@ function Anwesenheit() {
   const [err, setErr] = useState("");
   const [ov, setOv] = useState<Overview | null>(null);
   const [busy, setBusy] = useState(false);
+  const saving = useRef(false);
 
   const load = useCallback(async () => {
     const { data } = await api.GET("/api/attendance", { params: { query: { days: 400 } } });
@@ -51,8 +52,9 @@ function Anwesenheit() {
 
   const existing = ov?.entries.find((e) => e.date === date);
   const save = async (cancelled: boolean) => {
-    if (busy) return;
+    if (busy || saving.current) return;
     if (cancelled && existing && !confirm("Vorhandenen Eintrag durch 'ausgefallen' ersetzen?")) return;
+    saving.current = true;
     setBusy(true);
     try {
       const { error, response } = await api.PUT("/api/attendance/{day}", {
@@ -60,7 +62,7 @@ function Anwesenheit() {
       });
       if (!response.ok) { setErr(errText(error, "Speichern fehlgeschlagen.")); return; }
       setText(""); await load();
-    } catch { setErr("Speichern fehlgeschlagen."); } finally { setBusy(false); }
+    } catch { setErr("Speichern fehlgeschlagen."); } finally { saving.current = false; setBusy(false); }
   };
 
   const line = (e: Entry) => e.cancelled
@@ -82,7 +84,7 @@ function Anwesenheit() {
             <input className={field} value={text} onChange={(e) => setText(e.target.value)} autoComplete="off" />
           </label>
           {existing && <p className="text-sm text-neutral-600">Schon eingetragen: {line(existing)}</p>}
-          {perr && <p role="alert" className="text-danger">{perr}</p>}
+          <p aria-live="polite" className="text-danger">{perr}</p>
           {preview && (
             <div className="rounded-xl border border-neutral-200 p-3" aria-live="polite">
               <p>{attendanceLine(date, preview)}</p>

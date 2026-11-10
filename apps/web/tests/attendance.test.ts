@@ -13,4 +13,9 @@ describe("attendance helpers", () => {
     expect(attendanceLine("2026-11-08", { total: null, members: null, trials: 0, open_mat: 0, beginner: 4, names: [] }))
       .toBe("So 08.11. · Openmat 0 · Anfängerkurs 4");
   });
+  it("pluralizes Probetrainings", () => {
+    const c = { total: 5, members: 3, open_mat: null, beginner: null };
+    expect(attendanceLine("2026-11-10", { ...c, trials: 0, names: [] })).toContain("0 Probetrainings");
+    expect(attendanceLine("2026-11-10", { ...c, trials: 2, names: ["A", "B"] })).toContain("2 Probetrainings: A, B");
+  });
 });

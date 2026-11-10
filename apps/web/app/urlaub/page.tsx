@@ -119,7 +119,7 @@ function Urlaub() {
           <ul className="flex flex-col gap-2">
             {vacs.map((v) => (
               <li key={v.id} className="flex items-center justify-between gap-2 rounded-xl border border-neutral-200 p-3">
-                <span><b>{v.user_name}</b>: {deDate(v.start_date)}.–{deDate(v.end_date)}.{v.source === "calendar" && <span className="text-sm text-neutral-600"> (aus Kalender)</span>}</span>
+                <span><b>{v.user_name}</b>: {deDate(v.start_date)}–{deDate(v.end_date)}{v.source === "calendar" && <span className="text-sm text-neutral-600"> (aus Kalender)</span>}</span>
                 {mayDelete(v) && <button className={btn} onClick={() => act(api.DELETE("/api/vacations/{vacation_id}", { params: { path: { vacation_id: v.id } } }))}>Löschen</button>}
               </li>
             ))}
