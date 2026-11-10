@@ -1,27 +1,38 @@
+from dataclasses import dataclass
 from datetime import date
 
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
-from app.attendance_parse import Parsed
-from app.models import Attendance, Trial, TrialAttendance, User
+from app.models import Attendance, Trial, TrialAttendance, TrialStatus, User
 
 
-def save_day(db: Session, day: date, parsed: Parsed | None, user: User) -> Attendance:
+@dataclass(frozen=True)
+class DayEntry:
+    total: int
+    trial_names: list[str]
+    guests: int
+    open_mat: int | None
+    beginner: int | None
+
+
+def save_day(db: Session, day: date, parsed: DayEntry | None, user: User) -> Attendance:
     """Create or replace one day; parsed=None means cancelled. Commits."""
     row = db.get(Attendance, day) or Attendance(date=day)
     old = set(db.scalars(select(TrialAttendance.trial_id).where(TrialAttendance.date == day)))
     row.updated_by = user.id
     if parsed is None:
-        row.cancelled, row.total, row.trials, row.open_mat, row.beginner = True, None, 0, None, None
+        row.cancelled, row.total, row.trials, row.guests = True, None, 0, 0
+        row.open_mat, row.beginner = None, None
     else:
-        row.cancelled, row.total, row.trials = False, parsed.total, parsed.trials
+        row.cancelled, row.total, row.trials = False, parsed.total, len(parsed.trial_names)
+        row.guests = parsed.guests
         row.open_mat, row.beginner = parsed.open_mat, parsed.beginner
     db.add(row)
     db.flush()
     db.execute(delete(TrialAttendance).where(TrialAttendance.date == day))
     linked: set[int] = set()
-    for name in {n.casefold(): n for n in (parsed.names if parsed else [])}.values():
+    for name in {n.casefold(): n for n in (parsed.trial_names if parsed else [])}.values():
         t = db.scalar(select(Trial).where(Trial.name_key == name.casefold()))
         if not t:
             t = Trial(name=name, name_key=name.casefold(), first_date=day)
@@ -34,6 +45,8 @@ def save_day(db: Session, day: date, parsed: Parsed | None, user: User) -> Atten
     db.flush()
     for tid in old - linked:  # link for this day removed
         t = db.get(Trial, tid)
+        if t.status != TrialStatus.offen:
+            continue  # decided people (and their flag) are never deleted or re-dated
         first = db.scalar(select(func.min(TrialAttendance.date))
                           .where(TrialAttendance.trial_id == tid))
         if t.first_date != day:

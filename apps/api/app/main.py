@@ -26,6 +26,7 @@ from app.routers import (
     slots,
     sync_status,
     today,
+    trials,
     users,
     vacations,
 )
@@ -104,7 +105,7 @@ def create_app(settings: Settings | None = None, jwks: JWKSCache | None = None) 
     def healthz():
         return {"ok": True}
 
-    for r in (attendance.router, me.router, slots.router, users.router, presets.router, today.router, vacations.router, coverage.router, sync_status.router):
+    for r in (attendance.router, me.router, slots.router, users.router, presets.router, today.router, vacations.router, coverage.router, sync_status.router, trials.router):
         app.include_router(r, prefix="/api")
     return app
 

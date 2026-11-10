@@ -2,7 +2,7 @@ from datetime import date, datetime, time
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from app.models import Role, SlotKind, TimerMode
+from app.models import Role, SlotKind, TimerMode, TrialStatus
 
 
 class MeOut(BaseModel):
@@ -238,24 +238,13 @@ class SyncOut(BaseModel):
     unmatched: list[str]
 
 
-class AttendanceParseIn(BaseModel):
-    date: date
-    text: str = Field(max_length=500)
-
-
-class AttendanceParseOut(BaseModel):
-    total: int
-    trials: int
-    members: int
-    open_mat: int | None
-    beginner: int | None
-    names: list[str]
-    warnings: list[str]
-
-
 class AttendanceIn(BaseModel):
-    text: str | None = Field(default=None, max_length=500)
     cancelled: bool = False
+    total: int | None = None
+    trial_names: list[str] = []
+    guests: int = 0
+    open_mat: int | None = None
+    beginner: int | None = None
 
 
 class AttendanceOut(BaseModel):
@@ -263,6 +252,7 @@ class AttendanceOut(BaseModel):
     cancelled: bool
     total: int | None
     trials: int
+    guests: int
     members: int | None
     open_mat: int | None
     beginner: int | None
@@ -282,5 +272,34 @@ class AttendanceOverview(BaseModel):
     avg_by_weekday: list[WeekdayAvg]
 
 
+class WeekPoint(BaseModel):
+    week_start: date
+    avg: float | None
+    days: int
+
+
+class StatsOut(BaseModel):
+    months: int
+    weeks: list[WeekPoint]
+    weekday_avg: list[WeekdayAvg]
+
+
 class MissingOut(BaseModel):
     date: date | None
+
+
+class TrialOut(BaseModel):
+    id: int
+    name: str
+    status: str
+    first_date: date
+    member_since: date | None
+    visits: int
+    last_visit: date | None
+    due: bool
+    recent: bool
+
+
+class TrialPatch(BaseModel):
+    status: TrialStatus
+    member_since: date | None = None

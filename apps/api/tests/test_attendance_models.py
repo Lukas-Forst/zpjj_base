@@ -32,3 +32,28 @@ def test_deleting_day_requires_links_gone(app):
         db.commit()
         with pytest.raises(IntegrityError):
             db.execute(text("DELETE FROM attendance"))
+
+
+def test_guests_default_zero_and_bounded(app):
+    with app.state.session_factory() as db:
+        db.add(Attendance(date=D, total=3, trials=1))
+        db.commit()
+        assert db.get(Attendance, D).guests == 0
+    with app.state.session_factory() as db, pytest.raises(IntegrityError):
+        db.add(Attendance(date=date(2026, 11, 11), total=3, trials=1, guests=3))
+        db.commit()
+
+
+def test_trial_status_default_offen(app):
+    with app.state.session_factory() as db:
+        db.add(Trial(name="Max", name_key="max", first_date=D))
+        db.commit()
+        t = db.query(Trial).one()
+        assert t.status == "offen" and t.member_since is None
+
+
+def test_invalid_status_rejected(app):
+    with app.state.session_factory() as db, pytest.raises(IntegrityError):
+        db.execute(text("INSERT INTO trials (name, name_key, first_date, status)"
+                        " VALUES ('a', 'a', '2026-11-10', 'x')"))
+        db.commit()

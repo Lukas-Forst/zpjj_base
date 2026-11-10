@@ -80,4 +80,6 @@ Die alte Excel-Historie wird einmal importiert (vorhandene Tage bleiben unberüh
 2. Import starten: `fly ssh console -a zpjj-base-api -C "python -m app.cli import-excel /tmp/ZeroPressure_Retention.xlsm"` (gibt Zähler `days`, `skipped`, `trials` aus).
 3. Datei danach löschen: `fly ssh console -a zpjj-base-api -C "rm /tmp/ZeroPressure_Retention.xlsm"`.
 
+Nach dem Import haben die Probetrainierenden den Status `offen` (im Excel als Mitglied markierte: `mitglied`). Wer pro Besuch zahlt, markierst du danach in der App (Tab Probetrainings), damit diese Personen keinen Mitgliedschafts-Hinweis auslösen.
+
 Die Excel-Datei enthält echte Namen und gehört nie ins Repo.

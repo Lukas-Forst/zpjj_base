@@ -55,17 +55,17 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/attendance/parse": {
+    "/api/attendance/stats": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Stats */
+        get: operations["stats_api_attendance_stats_get"];
         put?: never;
-        /** Parse */
-        post: operations["parse_api_attendance_parse_post"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -334,19 +334,67 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/trials": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Trials */
+        get: operations["list_trials_api_trials_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/trials/{trial_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Trial */
+        patch: operations["patch_trial_api_trials__trial_id__patch"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /** AttendanceIn */
         AttendanceIn: {
-            /** Text */
-            text?: string | null;
             /**
              * Cancelled
              * @default false
              */
             cancelled: boolean;
+            /** Total */
+            total?: number | null;
+            /**
+             * Trial Names
+             * @default []
+             */
+            trial_names: string[];
+            /**
+             * Guests
+             * @default 0
+             */
+            guests: number;
+            /** Open Mat */
+            open_mat?: number | null;
+            /** Beginner */
+            beginner?: number | null;
         };
         /** AttendanceOut */
         AttendanceOut: {
@@ -361,6 +409,8 @@ export interface components {
             total: number | null;
             /** Trials */
             trials: number;
+            /** Guests */
+            guests: number;
             /** Members */
             members: number | null;
             /** Open Mat */
@@ -385,33 +435,6 @@ export interface components {
             avg_14d: number | null;
             /** Avg By Weekday */
             avg_by_weekday: components["schemas"]["WeekdayAvg"][];
-        };
-        /** AttendanceParseIn */
-        AttendanceParseIn: {
-            /**
-             * Date
-             * Format: date
-             */
-            date: string;
-            /** Text */
-            text: string;
-        };
-        /** AttendanceParseOut */
-        AttendanceParseOut: {
-            /** Total */
-            total: number;
-            /** Trials */
-            trials: number;
-            /** Members */
-            members: number;
-            /** Open Mat */
-            open_mat: number | null;
-            /** Beginner */
-            beginner: number | null;
-            /** Names */
-            names: string[];
-            /** Warnings */
-            warnings: string[];
         };
         /** DayOut */
         DayOut: {
@@ -572,6 +595,15 @@ export interface components {
             /** Sort Order */
             sort_order?: number | null;
         };
+        /** StatsOut */
+        StatsOut: {
+            /** Months */
+            months: number;
+            /** Weeks */
+            weeks: components["schemas"]["WeekPoint"][];
+            /** Weekday Avg */
+            weekday_avg: components["schemas"]["WeekdayAvg"][];
+        };
         /** SubstituteIn */
         SubstituteIn: {
             /** Slot Id */
@@ -651,6 +683,41 @@ export interface components {
             /** Display Name */
             display_name: string;
         };
+        /** TrialOut */
+        TrialOut: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Status */
+            status: string;
+            /**
+             * First Date
+             * Format: date
+             */
+            first_date: string;
+            /** Member Since */
+            member_since: string | null;
+            /** Visits */
+            visits: number;
+            /** Last Visit */
+            last_visit: string | null;
+            /** Due */
+            due: boolean;
+            /** Recent */
+            recent: boolean;
+        };
+        /** TrialPatch */
+        TrialPatch: {
+            status: components["schemas"]["TrialStatus"];
+            /** Member Since */
+            member_since?: string | null;
+        };
+        /**
+         * TrialStatus
+         * @enum {string}
+         */
+        TrialStatus: "offen" | "mitglied" | "zahlt_pro_besuch";
         /** UserCreate */
         UserCreate: {
             /** Email */
@@ -737,6 +804,18 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** WeekPoint */
+        WeekPoint: {
+            /**
+             * Week Start
+             * Format: date
+             */
+            week_start: string;
+            /** Avg */
+            avg: number | null;
+            /** Days */
+            days: number;
         };
         /** WeekdayAvg */
         WeekdayAvg: {
@@ -825,18 +904,16 @@ export interface operations {
             };
         };
     };
-    parse_api_attendance_parse_post: {
+    stats_api_attendance_stats_get: {
         parameters: {
-            query?: never;
+            query?: {
+                months?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AttendanceParseIn"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
@@ -844,7 +921,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AttendanceParseOut"];
+                    "application/json": components["schemas"]["StatsOut"];
                 };
             };
             /** @description Validation Error */
@@ -1472,6 +1549,61 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SyncOut"];
+                };
+            };
+        };
+    };
+    list_trials_api_trials_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrialOut"][];
+                };
+            };
+        };
+    };
+    patch_trial_api_trials__trial_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                trial_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TrialPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrialOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
