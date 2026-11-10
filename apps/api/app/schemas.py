@@ -238,24 +238,13 @@ class SyncOut(BaseModel):
     unmatched: list[str]
 
 
-class AttendanceParseIn(BaseModel):
-    date: date
-    text: str = Field(max_length=500)
-
-
-class AttendanceParseOut(BaseModel):
-    total: int
-    trials: int
-    members: int
-    open_mat: int | None
-    beginner: int | None
-    names: list[str]
-    warnings: list[str]
-
-
 class AttendanceIn(BaseModel):
-    text: str | None = Field(default=None, max_length=500)
     cancelled: bool = False
+    total: int | None = None
+    trial_names: list[str] = []
+    guests: int = 0
+    open_mat: int | None = None
+    beginner: int | None = None
 
 
 class AttendanceOut(BaseModel):
@@ -263,6 +252,7 @@ class AttendanceOut(BaseModel):
     cancelled: bool
     total: int | None
     trials: int
+    guests: int
     members: int | None
     open_mat: int | None
     beginner: int | None
