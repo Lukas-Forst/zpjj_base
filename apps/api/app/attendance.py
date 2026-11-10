@@ -20,22 +20,27 @@ def save_day(db: Session, day: date, parsed: Parsed | None, user: User) -> Atten
     db.add(row)
     db.flush()
     db.execute(delete(TrialAttendance).where(TrialAttendance.date == day))
-    touched = set(old)
+    linked: set[int] = set()
     for name in {n.casefold(): n for n in (parsed.names if parsed else [])}.values():
         t = db.scalar(select(Trial).where(Trial.name_key == name.casefold()))
         if not t:
             t = Trial(name=name, name_key=name.casefold(), first_date=day)
             db.add(t)
             db.flush()
+        elif day < t.first_date:
+            t.first_date = day  # never move an imported first_date later
         db.add(TrialAttendance(trial_id=t.id, date=day))
-        touched.add(t.id)
+        linked.add(t.id)
     db.flush()
-    for tid in touched:
+    for tid in old - linked:  # link for this day removed
+        t = db.get(Trial, tid)
         first = db.scalar(select(func.min(TrialAttendance.date))
                           .where(TrialAttendance.trial_id == tid))
+        if t.first_date != day:
+            continue  # imported/earlier first_date stays
         if first is None:
-            db.execute(delete(Trial).where(Trial.id == tid))
+            db.delete(t)  # created by typing on this day
         else:
-            db.get(Trial, tid).first_date = first
+            t.first_date = first
     db.commit()
     return row

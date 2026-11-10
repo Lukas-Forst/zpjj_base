@@ -240,7 +240,7 @@ class SyncOut(BaseModel):
 
 class AttendanceParseIn(BaseModel):
     date: date
-    text: str
+    text: str = Field(max_length=500)
 
 
 class AttendanceParseOut(BaseModel):
@@ -254,7 +254,7 @@ class AttendanceParseOut(BaseModel):
 
 
 class AttendanceIn(BaseModel):
-    text: str | None = None
+    text: str | None = Field(default=None, max_length=500)
     cancelled: bool = False
 
 

@@ -43,6 +43,10 @@ def parse_line(text: str, weekday: int) -> Parsed:
         names = [n.strip() for n in name_groups[0].split(",")]
         if any(not n or any(c.isdigit() for c in n) for n in names):
             raise ValueError("Namen dürfen nicht leer sein und keine Zahlen enthalten.")
+        if len(names) > 30:
+            raise ValueError("Maximal 30 Namen erlaubt.")
+        if any(len(n) > 100 for n in names):
+            raise ValueError("Ein Name darf höchstens 100 Zeichen lang sein.")
 
     tokens = rest.split()
     if not tokens or not all(_num(t) for t in tokens):

@@ -112,3 +112,34 @@ def test_unauthenticated_is_401(client):
 
 def test_cancel_sunday(client, h):
     assert put(client, h, last(7), cancelled=True).json()["cancelled"] is True
+
+
+def _imported(app, name, first):
+    with app.state.session_factory() as db:
+        db.add(Trial(name=name, name_key=name.casefold(), first_date=first))
+        db.commit()
+
+
+def test_imported_trial_keeps_earlier_first_date(client, app, h):
+    d = last(3)
+    _imported(app, "Anna", d - timedelta(days=60))
+    put(client, h, d, text="10 1 (Anna)")
+    assert rows(app, Trial)[0].first_date == d - timedelta(days=60)
+
+
+def test_correcting_imported_name_does_not_delete_person(client, app, h):
+    d = last(3)
+    _imported(app, "Anna", d - timedelta(days=60))
+    put(client, h, d, text="10 1 (Anna)")
+    put(client, h, d, text="10 1 (Anne)")
+    t = {x.name: x.first_date for x in rows(app, Trial)}
+    assert t == {"Anna": d - timedelta(days=60), "Anne": d}
+
+
+def test_input_caps(client, h):
+    d = last(3).isoformat()
+    for text, status in [("1 " * 300, 422), (f"40 31 ({','.join(['Ab'] * 31)})", 422),
+                         (f"1 1 ({'a' * 101})", 422), (f"1 1 ({'a' * 100})", 200)]:
+        r = client.post("/api/attendance/parse", headers=h, json={"date": d, "text": text})
+        assert r.status_code == status, (text[:20], r.text)
+    assert client.put(f"/api/attendance/{d}", headers=h, json={"text": "1" * 501}).status_code == 422
