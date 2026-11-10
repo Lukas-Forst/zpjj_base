@@ -38,7 +38,8 @@ def coverage(_: User = Depends(current_user), db: Session = Depends(get_db)):
     names = {u.id: u.display_name for u in db.scalars(select(User))}
     return [GapOut(date=g.date, slot_id=g.slot_id, weekday=by_slot[g.slot_id].weekday,
                    start_time=by_slot[g.slot_id].start_time, kind=by_slot[g.slot_id].kind,
-                   level=g.level, absent=[names[i] for i in g.absent_user_ids])
+                   level=g.level, absent=[names[i] for i in g.absent_user_ids],
+                   location=by_slot[g.slot_id].location)
             for g in compute_gaps(slots, vacs, subs, today)]
 
 
@@ -67,7 +68,8 @@ def plan(_: User = Depends(current_user), db: Session = Depends(get_db)):
                 open_ += status == "unbesetzt"
                 partial += status == "teilweise"
                 cards.append(PlanSlot(
-                    slot_id=s.id, start_time=s.start_time, kind=s.kind, status=status,
+                    slot_id=s.id, start_time=s.start_time, kind=s.kind, location=s.location,
+                    status=status,
                     trainers=[t.display_name for t in s.trainers if t.active and t.is_trainer],
                     absent=[names[a] for a in absent],
                     substitutes=[PlanSubstitute(user_id=x.user_id, user_name=names[x.user_id])

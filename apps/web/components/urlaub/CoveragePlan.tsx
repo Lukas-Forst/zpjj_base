@@ -70,7 +70,9 @@ export function CoveragePlan(p: Props) {
     const jump = isProblem(s) && p.isTrainer && !p.myAbsent(d.date) && !mine;
     return (
       <li key={s.slot_id} className={`rounded-xl border p-3 ${CARD[s.status]}`}>
-        <div className="font-semibold">{hhmm(s.start_time)} {KIND_LABEL[s.kind]}</div>
+        <div className="font-semibold">{hhmm(s.start_time)} {KIND_LABEL[s.kind]}
+          {s.location && <span className="ml-2 rounded-full border border-neutral-400 px-2 text-xs font-normal dark:border-neutral-500">{s.location}</span>}
+        </div>
         {s.status !== "nicht_geprueft" && <div>{here.join(", ") || "–"}</div>}
         {s.absent.length > 0 && <div className={`text-sm ${muted}`}>Urlaub: {s.absent.join(", ")}</div>}
         {LABEL[s.status] && (

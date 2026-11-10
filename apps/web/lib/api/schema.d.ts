@@ -484,6 +484,8 @@ export interface components {
             level: string;
             /** Absent */
             absent: string[];
+            /** Location */
+            location?: string | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -527,6 +529,8 @@ export interface components {
              */
             start_time: string;
             kind: components["schemas"]["SlotKind"];
+            /** Location */
+            location?: string | null;
             /** Status */
             status: string;
             /** Trainers */
@@ -625,6 +629,8 @@ export interface components {
              * @default 0
              */
             sort_order: number;
+            /** Location */
+            location?: string | null;
         };
         /**
          * SlotKind
@@ -652,6 +658,8 @@ export interface components {
             active: boolean;
             /** Sort Order */
             sort_order: number;
+            /** Location */
+            location?: string | null;
             /** Trainers */
             trainers: components["schemas"]["TrainerOut"][];
         };
@@ -668,6 +676,8 @@ export interface components {
             active?: boolean | null;
             /** Sort Order */
             sort_order?: number | null;
+            /** Location */
+            location?: string | null;
         };
         /** StatsOut */
         StatsOut: {

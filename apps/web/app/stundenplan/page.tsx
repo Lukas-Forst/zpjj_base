@@ -22,7 +22,7 @@ function TrainerDialog({ slot, users, onClose, onSaved }: { slot: Slot; users: U
   return (
     <dialog ref={ref} onClose={onClose} className="m-auto w-[min(90vw,24rem)] rounded-2xl p-5">
       <h2 className="mb-3 text-lg font-semibold">
-        Trainer: {WEEKDAYS[slot.weekday]} {hhmm(slot.start_time)} {KIND_LABEL[slot.kind]}
+        Trainer: {WEEKDAYS[slot.weekday]} {hhmm(slot.start_time)} {KIND_LABEL[slot.kind]}{slot.location ? ` (${slot.location})` : ""}
       </h2>
       <div className="flex flex-col gap-1">
         {users.filter((u) => u.active && u.is_trainer).map((u) => (
@@ -72,7 +72,7 @@ function Plan() {
                 {items.map((s) => (
                   <li key={s.id} className="flex items-center justify-between gap-2 rounded-xl border border-neutral-200 p-3">
                     <div>
-                      <div className="font-medium">{hhmm(s.start_time)}–{hhmm(s.end_time)} · {KIND_LABEL[s.kind]}</div>
+                      <div className="font-medium">{hhmm(s.start_time)}–{hhmm(s.end_time)} · {KIND_LABEL[s.kind]}{s.location ? ` · ${s.location}` : ""}</div>
                       <div className="text-sm text-neutral-600">{s.trainers.length ? s.trainers.map((t) => t.display_name).join(", ") : "kein Trainer"}</div>
                     </div>
                     {admin && <button className="min-h-11 rounded-lg border border-accent px-3 text-accent" onClick={() => setEditing(s)}>Trainer ändern</button>}

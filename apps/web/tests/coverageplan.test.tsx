@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { gapLabel } from "@/components/CoverageBanner";
 import { CoveragePlan } from "@/components/urlaub/CoveragePlan";
 import type { components } from "@/lib/api/schema";
 
@@ -8,7 +9,7 @@ type Week = components["schemas"]["PlanWeek"];
 type Slot = components["schemas"]["PlanSlot"];
 
 const slot = (o: Partial<Slot> = {}): Slot => ({
-  slot_id: 1, start_time: "18:00:00", kind: "no_gi", status: "besetzt",
+  slot_id: 1, start_time: "18:00:00", kind: "no_gi", location: null, status: "besetzt",
   trainers: ["Nico", "Can"], absent: [], substitutes: [], ...o,
 });
 const day = (date: string, weekday: number, slots: Slot[]) => ({ date, weekday, slots });
@@ -76,6 +77,22 @@ describe("CoveragePlan", () => {
     expect(onWithdraw).toHaveBeenCalledWith(1, "2026-11-12", 7);
     rerender(<CoveragePlan {...base} boss weeks={w} />);
     expect(screen.getAllByRole("button", { name: /Austragen/ })).toHaveLength(2);
+  });
+
+  it("names the location on cards of the second gym only", () => {
+    media(true);
+    render(<CoveragePlan {...base} weeks={[week({ days: [day("2026-11-10", 2, [
+      slot({ slot_id: 4, start_time: "19:30:00", location: "Rheinheim", trainers: ["Nico"] }),
+      slot({ slot_id: 5, start_time: "18:00:00", trainers: ["Chris"] })])] })]} />);
+    expect(screen.getAllByText("Rheinheim")).toHaveLength(1);
+    expect(screen.getByText(/19:30 No-Gi/).textContent).toContain("Rheinheim");
+    expect(screen.getByText(/18:00 No-Gi/).textContent).not.toContain("Rheinheim");
+  });
+
+  it("puts the location into the gap label used on the home page", () => {
+    const g = { date: "2026-11-10", slot_id: 1, weekday: 2, start_time: "19:30:00", kind: "no_gi" as const, level: "unbesetzt", absent: ["Nico"] };
+    expect(gapLabel({ ...g, location: "Rheinheim" })).toBe("Dienstag 10.11., 19:30 No-Gi (Rheinheim)");
+    expect(gapLabel({ ...g, location: null })).toBe("Dienstag 10.11., 19:30 No-Gi");
   });
 
   it("marks open mat as not checked and never offers a substitute for it", () => {

@@ -1,7 +1,7 @@
 # Datenmodell
 
 ## Migriert (M0-M4)
-- `users`, `slots`, `slot_trainers` (M0), `timer_presets` (M1), `vacations`, `substitutes`, `sync_state` (M3: Urlaub, Vertretung pro Slot und Datum, Zustand des Kalender-Abgleichs). `attendance`, `trials`, `trial_attendance` (M4: eine Zeile pro Tag mit optionalen Open-Mat-/Anfänger-Zählern und einer Gäste-Anzahl `guests` (Default 0, `trials + guests <= total`) statt Sessions pro Slot; Probetrainierende per `name_key` eindeutig, mit `status` (`offen`, `mitglied`, `zahlt_pro_besuch`; Default `offen`) und optionalem `member_since`). Siehe `apps/api/app/models.py`.
+- `users`, `slots` (mit optionalem `location`, z. B. "Rheinheim"; leer = Hauptstandort; Anwesenheitszahlen, "Zahlen fehlen" und trainingsfreie Tage gelten nur für den Hauptstandort, die Besetzungswarnung für alle Orte), `slot_trainers` (M0), `timer_presets` (M1), `vacations`, `substitutes`, `sync_state` (M3: Urlaub, Vertretung pro Slot und Datum, Zustand des Kalender-Abgleichs). `attendance`, `trials`, `trial_attendance` (M4: eine Zeile pro Tag mit optionalen Open-Mat-/Anfänger-Zählern und einer Gäste-Anzahl `guests` (Default 0, `trials + guests <= total`) statt Sessions pro Slot; Probetrainierende per `name_key` eindeutig, mit `status` (`offen`, `mitglied`, `zahlt_pro_besuch`; Default `offen`) und optionalem `member_since`). Siehe `apps/api/app/models.py`.
 - Slot-Zeiten sind lokale Gym-Zeit (Europe/Berlin), Zeitstempel UTC. Slots werden nur deaktiviert.
 
 ## Nur dokumentiert (nicht migriert)

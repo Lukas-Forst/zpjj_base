@@ -91,5 +91,21 @@ def test_substitute_turns_card_into_vertreten(client, setup):
     assert (w["unbesetzt"], w["teilweise"]) == (0, 0)  # covered cards are not counted
 
 
+def test_card_and_gap_carry_the_location(client, app, setup):
+    s = setup
+    with app.state.session_factory() as db:
+        rh = Slot(weekday=DAY.isoweekday(), start_time=time(19, 30), end_time=time(21, 30),
+                  kind=SlotKind.no_gi, location="Rheinheim")
+        rh.trainers = [db.get(User, s["c"])]
+        db.add(rh)
+        db.commit()
+    vac(client, s["boss"], s["c"])
+    _, _, slots = cards(plan(client, s["tim"]))
+    assert slots["19:30"]["location"] == "Rheinheim" and slots["19:30"]["status"] == "unbesetzt"
+    assert slots["18:00"]["location"] is None
+    gaps = client.get("/api/coverage", headers=s["tim"]).json()
+    assert [g["location"] for g in gaps] == ["Rheinheim"]
+
+
 def test_plan_requires_login(client):
     assert client.get("/api/coverage/plan").status_code == 401
