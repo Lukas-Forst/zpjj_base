@@ -10,7 +10,7 @@ const day = (v: Cell): string | null => (v instanceof Date && !isNaN(+v) ? v.toI
 const str = (v: Cell): string => (v == null ? "" : String(v));
 
 /**
- * One-off history import, same mapping as apps/api/app/import_excel.py. Idempotent SQL: existing days stay
+ * One-off history import, same mapping as the retired Python importer. Idempotent SQL: existing days stay
  * untouched and only days inserted by this very run get person links (changes() guard).
  */
 export function buildImportSql(input: ImportInput, now = new Date().toISOString()): ImportResult {

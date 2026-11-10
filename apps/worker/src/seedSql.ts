@@ -3,7 +3,7 @@ import { q } from "./sql";
 export type SeedUser = { email: string; display_name: string; role: "gesellschafter" | "trainer"; is_trainer: boolean };
 type Row = [day: number, start: string, end: string, kind: "no_gi" | "gi" | "open_mat", trainers: string[], location: string | null];
 
-// Source: https://zpjj.de/schedule (Monday is closed); 1 = Monday. Mirrors apps/api/app/cli.py.
+// Source: https://zpjj.de/schedule (Monday is closed); 1 = Monday. Mirrors the retired Python CLI seed.
 const SCHEDULE: Row[] = [
   [2, "18:00:00", "20:00:00", "no_gi", ["Nico", "Can"], null],
   [3, "20:00:00", "22:00:00", "no_gi", ["Chris"], null], // Tim teaches in Rheinheim on Wednesdays
