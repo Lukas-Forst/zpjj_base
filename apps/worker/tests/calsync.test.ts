@@ -1,7 +1,8 @@
 import { env } from "cloudflare:workers";
-import { beforeEach, expect, it } from "vitest";
+import { beforeEach, expect, it, vi } from "vitest";
 import { addDays } from "../src/dates";
 import { syncCalendar } from "../src/calsync";
+import { GoogleCalendar } from "../src/gcal";
 import type { CalEvent, CalendarClient } from "../src/gcal";
 import { addUser, resetDb } from "./helpers";
 
@@ -176,4 +177,22 @@ it("unchanged state writes no extra calendar calls", async () => {
   cal.calls.length = 0;
   await sync();
   expect(cal.calls).toEqual([]);
+});
+it("overlapping run that already imported the event does not fail (unique gcal_event_id)", async () => {
+  const nico = await mkUser("Nico");
+  await mkVac(nico, "2020-01-01", "2020-01-02", "calendar", "m1"); // outside the read window, same event id
+  cal.events.set("m1", { id: "m1", title: "Nico Urlaub", start: D1, end_inclusive: D2, private_base_id: null });
+  await sync();
+  expect((await state()).error).toBeNull();
+  expect((await vacs()).filter((r) => r.gcal_event_id === "m1")).toHaveLength(1);
+});
+it("malformed service account secret is flagged without leaking it", async () => {
+  const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+  const bad = new GoogleCalendar("c", '{"private_key": SECRETMARKER "x"');
+  await syncCalendar(db(), bad, TODAY, NOW);
+  const st = await state();
+  expect(st.error).toContain("GCAL_SERVICE_ACCOUNT_JSON ungültig");
+  expect(JSON.stringify(spy.mock.calls)).not.toContain("SECRETMARKER");
+  expect(st.error).not.toContain("SECRETMARKER");
+  spy.mockRestore();
 });

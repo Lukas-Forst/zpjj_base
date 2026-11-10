@@ -77,7 +77,13 @@ export class GoogleCalendar implements CalendarClient {
 
   private async auth(): Promise<string> {
     if (!this.token || this.token.exp < Date.now() / 1000 + 60) {
-      const sa = JSON.parse(this.serviceAccountJson);
+      let sa: any;
+      try {
+        sa = JSON.parse(this.serviceAccountJson); // never echo the parse error: V8 quotes secret fragments
+        if (!sa?.private_key || !sa?.client_email) throw 0;
+      } catch {
+        throw new Error("GCAL_SERVICE_ACCOUNT_JSON ungültig");
+      }
       const uri: string = sa.token_uri || DEFAULT_TOKEN_URI;
       const now = Math.floor(Date.now() / 1000);
       const assertion = await signJwt({ iss: sa.client_email, scope: SCOPE, aud: uri, iat: now, exp: now + 3600 }, sa.private_key);

@@ -21,6 +21,8 @@ export const calendar = {
   },
 };
 
+// ponytail: no lease, so two overlapping runs (cron + hook) can transiently create a duplicate Google event,
+// which the next run deletes; imports are idempotent (ON CONFLICT DO NOTHING). Add a lease column in sync_state if it matters.
 export async function syncCalendar(db: D1Database, client: CalendarClient, today: string, nowIso: string): Promise<void> {
   const lo = addDays(today, -30);
   const hi = addDays(today, 365);
@@ -65,7 +67,7 @@ export async function syncCalendar(db: D1Database, client: CalendarClient, today
       }
       const v = known.get(ev.id);
       if (!v) {
-        w.push(stmt(db, "INSERT INTO vacations (user_id, start_date, end_date, source, gcal_event_id, created_at, updated_at) VALUES (?,?,?,'calendar',?,?,?)", u.id, ev.start, ev.end_inclusive, ev.id, nowIso, nowIso));
+        w.push(stmt(db, "INSERT INTO vacations (user_id, start_date, end_date, source, gcal_event_id, created_at, updated_at) VALUES (?,?,?,'calendar',?,?,?) ON CONFLICT(gcal_event_id) DO NOTHING", u.id, ev.start, ev.end_inclusive, ev.id, nowIso, nowIso));
       } else if (v.user_id !== u.id || v.start_date !== ev.start || v.end_date !== ev.end_inclusive) {
         w.push(stmt(db, "UPDATE vacations SET user_id = ?, start_date = ?, end_date = ?, updated_at = ? WHERE id = ?", u.id, ev.start, ev.end_inclusive, nowIso, v.id));
       }
