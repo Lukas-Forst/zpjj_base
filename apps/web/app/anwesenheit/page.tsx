@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { EntryForm } from "@/components/attendance/EntryForm";
 import { Stats } from "@/components/attendance/Stats";
+import { TrialList } from "@/components/attendance/TrialList";
 import { Tabs } from "@/components/attendance/Tabs";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
@@ -27,13 +28,13 @@ function Anwesenheit() {
   const [date, setDate] = useState(today);
   const [err, setErr] = useState("");
   const [ov, setOv] = useState<Overview | null>(null);
-  const [trials, setTrials] = useState<TrialOut[]>([]);
+  const [trials, setTrials] = useState<TrialOut[] | null>(null);
 
   const load = useCallback(async () => {
     const { data } = await api.GET("/api/attendance", { params: { query: { days: 400 } } });
     if (data) setOv(data); else setErr("Daten konnten nicht geladen werden.");
     const t = await api.GET("/api/trials");
-    if (t.data) setTrials(t.data);
+    if (t.data) setTrials(t.data); else setErr("Daten konnten nicht geladen werden.");
   }, []);
   useEffect(() => { load().catch(() => setErr("Daten konnten nicht geladen werden.")); }, [load]);
   useEffect(() => {
@@ -60,7 +61,7 @@ function Anwesenheit() {
           </label>
           {existing && <p className="mb-3 text-sm text-neutral-600">Schon eingetragen: {line(existing)}</p>}
           {ov && date
-            ? <EntryForm key={date} day={date} existing={existing} trials={trials} onSaved={() => { setErr(""); load().catch(() => setErr("Daten konnten nicht geladen werden.")); }} />
+            ? <EntryForm key={date} day={date} existing={existing} trials={trials ?? []} onSaved={() => { setErr(""); load().catch(() => setErr("Daten konnten nicht geladen werden.")); }} />
             : <p className="text-sm text-neutral-600">Lädt …</p>}
         </section>
 
@@ -78,7 +79,7 @@ function Anwesenheit() {
         )}
       </>)}
       {tab === "auswertung" && <Stats />}
-      {tab === "probetrainings" && <p className="text-sm text-neutral-600">Kommt gleich.</p>}
+      {tab === "probetrainings" && trials && <TrialList trials={trials} onUpdate={(u) => setTrials((l) => (l ?? []).map((x) => (x.id === u.id ? u : x)))} />}
     </main>
   );
 }
