@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { EntryForm } from "@/components/attendance/EntryForm";
+import { Stats } from "@/components/attendance/Stats";
 import { Tabs } from "@/components/attendance/Tabs";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
@@ -76,7 +77,8 @@ function Anwesenheit() {
           </section>
         )}
       </>)}
-      {tab !== "eintragen" && <p className="text-sm text-neutral-600">Kommt gleich.</p>}
+      {tab === "auswertung" && <Stats />}
+      {tab === "probetrainings" && <p className="text-sm text-neutral-600">Kommt gleich.</p>}
     </main>
   );
 }
