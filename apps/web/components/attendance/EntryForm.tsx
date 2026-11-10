@@ -41,6 +41,7 @@ export function EntryForm({ day, existing, trials, onSaved }: { day: string; exi
     if (busy || saving.current) return;
     if (!cancelled) {
       const used = Array.from({ length: count }, (_, i) => nameAt(i).trim());
+      if (sunday ? members.trim() === "" : total.trim() === "") { setErr(sunday ? "Bitte Mitglieder eintragen (auch 0)." : "Bitte Teilnehmer gesamt eintragen (auch 0)."); return; }
       if (used.some((n) => !n)) { setErr("Bitte für jedes Probetraining einen Namen eintragen."); return; }
       if (existing && !confirm("Vorhandenen Eintrag ersetzen?")) return;
     } else if (existing && !confirm("Vorhandenen Eintrag durch 'ausgefallen' ersetzen?")) return;
@@ -51,7 +52,7 @@ export function EntryForm({ day, existing, trials, onSaved }: { day: string; exi
         total: sunday ? sundayTotal(num(members), count, num(guests)) : num(total),
         trial_names: Array.from({ length: count }, (_, i) => nameAt(i).trim()),
         guests: num(guests),
-        ...(sunday ? { open_mat: num(mat), beginner: beginner.trim() === "" ? null : num(beginner) } : {}),
+        ...(sunday ? { open_mat: mat.trim() === "" ? null : num(mat), beginner: beginner.trim() === "" ? null : num(beginner) } : {}),
       };
       const { error, response } = await api.PUT("/api/attendance/{day}", { params: { path: { day } }, body });
       if (!response.ok) { setErr(errText(error, "Speichern fehlgeschlagen.")); return; }
@@ -64,7 +65,7 @@ export function EntryForm({ day, existing, trials, onSaved }: { day: string; exi
     <form onSubmit={(e) => { e.preventDefault(); save(false); }} className="flex flex-col gap-3">
       {err && <p role="alert" className="text-danger">{err}</p>}
       {sunday
-        ? <NumField label="Mitglieder (10:00–11:30)" value={members} set={edit(setMembers)} />
+        ? <NumField label="Mitglieder (10:00–11:30)" value={members} set={edit(setMembers)} required />
         : <NumField label="Teilnehmer gesamt" value={total} set={edit(setTotal)} required />}
       <NumField label="Davon Probetraining" value={nTrials} set={edit(setNTrials)} />
       {Array.from({ length: count }, (_, i) => (

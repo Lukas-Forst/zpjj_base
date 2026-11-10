@@ -52,10 +52,20 @@ describe("EntryForm", () => {
     expect((put.mock.calls[0][1] as { body: object }).body).not.toHaveProperty("open_mat");
   });
 
+  it("blocks a Sunday with empty Mitglieder", async () => {
+    const u = userEvent.setup();
+    render(<EntryForm day={SUN} existing={undefined} trials={[]} onSaved={() => {}} />);
+    await u.type(screen.getByLabelText("Anfängerkurs (leer = kein Kurs)"), "5");
+    fireEvent.submit(screen.getByRole("button", { name: "Speichern" }).closest("form")!);
+    expect(await screen.findByRole("alert")).toHaveTextContent("Bitte Mitglieder eintragen (auch 0)");
+    expect(put).not.toHaveBeenCalled();
+  });
+
   it("sends a Sunday body with open mat and beginner", async () => {
     const u = userEvent.setup();
     render(<EntryForm day={SUN} existing={undefined} trials={[]} onSaved={() => {}} />);
     expect(screen.queryByLabelText("Teilnehmer gesamt")).toBeNull();
+    await u.type(screen.getByLabelText("Mitglieder (10:00–11:30)"), "0");
     await u.type(screen.getByLabelText("Openmat"), "4");
     await u.type(screen.getByLabelText("Anfängerkurs (leer = kein Kurs)"), "15");
     await u.click(screen.getByRole("button", { name: "Speichern" }));
@@ -63,20 +73,30 @@ describe("EntryForm", () => {
     expect((put.mock.calls[0][1] as { body: object }).body).toMatchObject({ total: 0, open_mat: 4, beginner: 15 });
   });
 
-  it("empty Anfängerkurs sends null", async () => {
+  it("empty Openmat and Anfängerkurs send null", async () => {
     const u = userEvent.setup();
     render(<EntryForm day={SUN} existing={undefined} trials={[]} onSaved={() => {}} />);
-    await u.type(screen.getByLabelText("Openmat"), "4");
+    await u.type(screen.getByLabelText("Mitglieder (10:00–11:30)"), "0");
     await u.click(screen.getByRole("button", { name: "Speichern" }));
     await waitFor(() => expect(put).toHaveBeenCalled());
-    expect((put.mock.calls[0][1] as { body: object }).body).toMatchObject({ beginner: null });
+    expect((put.mock.calls[0][1] as { body: object }).body).toMatchObject({ total: 0, open_mat: null, beginner: null });
+  });
+
+  it("explicit Openmat 0 sends 0", async () => {
+    const u = userEvent.setup();
+    render(<EntryForm day={SUN} existing={undefined} trials={[]} onSaved={() => {}} />);
+    await u.type(screen.getByLabelText("Mitglieder (10:00–11:30)"), "0");
+    await u.type(screen.getByLabelText("Openmat"), "0");
+    await u.click(screen.getByRole("button", { name: "Speichern" }));
+    await waitFor(() => expect(put).toHaveBeenCalled());
+    expect((put.mock.calls[0][1] as { body: object }).body).toMatchObject({ open_mat: 0 });
   });
 
   it("shows the server detail in an alert", async () => {
     const u = userEvent.setup();
     put.mockResolvedValue({ response: { ok: false }, error: { detail: "Zu viele" } } as never);
     render(<EntryForm day={SUN} existing={undefined} trials={[]} onSaved={() => {}} />);
-    await u.type(screen.getByLabelText("Openmat"), "4");
+    await u.type(screen.getByLabelText("Mitglieder (10:00–11:30)"), "3");
     await u.click(screen.getByRole("button", { name: "Speichern" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Zu viele");
   });
