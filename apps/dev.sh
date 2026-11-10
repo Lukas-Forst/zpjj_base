@@ -1,20 +1,25 @@
 #!/usr/bin/env bash
-# Local test: API on :8000 (dev login), web export + proxy on :3000. Stop with Ctrl+C.
-# Reads TRELLO_KEY / TRELLO_TOKEN from ../api_key.md if present. Needs: uv, npm, python3.
+# Lokaler Test: Worker + Oberfläche auf http://localhost:${PORT:-3000} (Dev-Login). Stop mit Ctrl+C.
+# Liest TRELLO_KEY / TRELLO_TOKEN aus ../api_key.md, falls vorhanden. Braucht: npm.
+# Lokale D1 liegt in worker/.wrangler (PERSIST_DIR überschreibt den Pfad).
 set -euo pipefail
 cd "$(dirname "$0")"
-[ -f api/seed/users.local.yaml ] || cp api/seed/users.example.yaml api/seed/users.local.yaml
+PORT=${PORT:-3000}
+EMAIL=${AUTH_DEV_EMAIL:-lukas@example.invalid}
+PERSIST=${PERSIST_DIR:-$PWD/worker/.wrangler/state}
 (cd web && npm run build >/dev/null)
-export ENV=dev DATABASE_URL=sqlite:///./dev.db AUTH_DEV_EMAIL=${AUTH_DEV_EMAIL:-lukas@example.invalid}
-export BOOTSTRAP_ADMIN_EMAILS=$AUTH_DEV_EMAIL TRELLO_BOARD=${TRELLO_BOARD:-Lzg85PcJ}
-if [ -f ../api_key.md ]; then
-  export "$(grep '^TRELLO_KEY=' ../api_key.md)" "$(grep '^TRELLO_TOKEN=' ../api_key.md)"
+cd worker
+W="npx wrangler"
+$W d1 migrations apply zpjj-base --local --persist-to "$PERSIST" >/dev/null
+SEED=$(mktemp --suffix=.sql); trap 'rm -f "$SEED"' EXIT
+npm run -s seed > "$SEED"   # users.local.yaml, sonst users.example.yaml; idempotent
+$W d1 execute zpjj-base --local --persist-to "$PERSIST" --file "$SEED" >/dev/null
+VARS=(--var ENV:dev --var "AUTH_DEV_EMAIL:$EMAIL" --var "BOOTSTRAP_ADMIN_EMAILS:$EMAIL" --var "TRELLO_BOARD:${TRELLO_BOARD:-Lzg85PcJ}")
+if [ -f ../../api_key.md ]; then
+  for k in TRELLO_KEY TRELLO_TOKEN; do
+    v=$(grep "^$k=" ../../api_key.md | head -1 | cut -d= -f2- || true)
+    [ -n "$v" ] && VARS+=(--var "$k:$v")
+  done
 fi
-cd api
-uv run alembic upgrade head >/dev/null
-uv run python -m app.cli seed-schedule >/dev/null
-trap 'kill 0' EXIT
-uv run uvicorn --factory app.main:app_factory --port 8000 &
-python3 ../dev_proxy.py 3000 &
-echo "Öffne http://localhost:3000  (eingeloggt als $AUTH_DEV_EMAIL)"
-wait
+echo "Öffne http://localhost:$PORT  (eingeloggt als $EMAIL)"
+exec $W dev --local --port "$PORT" --persist-to "$PERSIST" "${VARS[@]}"
