@@ -117,12 +117,18 @@ class SyncState(Base):
     unmatched: Mapped[list] = mapped_column(sa.JSON, default=list)
 
 
+class TrialStatus(enum.StrEnum):
+    offen = "offen"
+    mitglied = "mitglied"
+    zahlt_pro_besuch = "zahlt_pro_besuch"
+
+
 class Attendance(Base):
     __tablename__ = "attendance"
     __table_args__ = (
-        sa.CheckConstraint("total IS NULL OR trials <= total"),
+        sa.CheckConstraint("total IS NULL OR trials + guests <= total"),
         sa.CheckConstraint(
-            "(total IS NULL OR total >= 0) AND trials >= 0"
+            "(total IS NULL OR total >= 0) AND trials >= 0 AND guests >= 0"
             " AND (open_mat IS NULL OR open_mat >= 0) AND (beginner IS NULL OR beginner >= 0)"
         ),
     )
@@ -130,6 +136,7 @@ class Attendance(Base):
     cancelled: Mapped[bool] = mapped_column(default=False)
     total: Mapped[int | None] = mapped_column(nullable=True)
     trials: Mapped[int] = mapped_column(default=0)
+    guests: Mapped[int] = mapped_column(default=0, server_default="0")
     open_mat: Mapped[int | None] = mapped_column(nullable=True)
     beginner: Mapped[int | None] = mapped_column(nullable=True)
     updated_by: Mapped[int | None] = mapped_column(sa.ForeignKey("users.id"), nullable=True)
@@ -142,6 +149,11 @@ class Trial(Base):
     name: Mapped[str] = mapped_column(sa.String(100))
     name_key: Mapped[str] = mapped_column(sa.String(100), unique=True)  # casefolded name
     first_date: Mapped[dt.date]
+    status: Mapped[TrialStatus] = mapped_column(
+        _enum(TrialStatus, "trial_status"), default=TrialStatus.offen,
+        server_default=TrialStatus.offen.value,
+    )
+    member_since: Mapped[dt.date | None] = mapped_column(nullable=True)
 
 
 class TrialAttendance(Base):
