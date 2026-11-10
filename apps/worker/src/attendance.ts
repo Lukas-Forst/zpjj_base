@@ -2,6 +2,7 @@ import { all, batch, first, stmt } from "./db";
 import { HttpError } from "./errors";
 import { isoWeekday, todayBerlin } from "./dates";
 import { now } from "./schemas/common";
+import { nameKey } from "./nameKey";
 
 export type DayEntry = { total: number; trial_names: string[]; guests: number; open_mat: number | null; beginner: number | null };
 export type AttendanceInBody = { cancelled: boolean; total?: number | null; trial_names: string[]; guests: number; open_mat?: number | null; beginner?: number | null };
@@ -13,8 +14,7 @@ export type AttendanceOutBody = {
 const MAX_COUNT = 1000;
 const bad = (m: string) => new HttpError(422, m);
 
-/** Case-insensitive person key; ß -> ss like Python casefold() (other exotic folds differ, irrelevant for names here). */
-export const nameKey = (n: string): string => n.normalize("NFKC").toLowerCase().replace(/ß/g, "ss");
+export { nameKey };
 
 export async function checkDay(db: D1Database, day: string): Promise<void> {
   if (day > todayBerlin()) throw bad("Für die Zukunft kann nichts eingetragen werden.");
