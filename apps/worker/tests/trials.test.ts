@@ -79,3 +79,8 @@ it("trials require login (test_trials_require_login)", async () => {
   expect((await call("/api/trials")).status).toBe(401);
   expect((await call("/api/trials/1", { method: "PATCH", json: { status: "offen" } })).status).toBe(401);
 });
+it("name tiebreak compares by code point like Python casefold (new)", async () => {
+  for (const n of ["jürgen", "jz", "jan"]) await person(n, [3]);
+  const rows = (await (await call("/api/trials", { as: EMAIL })).json()) as any[];
+  expect(rows.map((r) => r.name)).toEqual(["jan", "jz", "jürgen"]);
+});

@@ -19,6 +19,8 @@ const json = <S extends z.ZodType>(schema: S) => ({ "application/json": { schema
 
 type Row = { id: number; name: string; status: string; first_date: string; member_since: string | null; visits: number; last_visit: string | null };
 
+const cmp = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0); // code point order like Python, not ICU
+
 async function rows(db: D1Database, id?: number): Promise<z.infer<typeof TrialOut>[]> {
   const today = todayBerlin();
   const from = addDays(today, -28);
@@ -37,8 +39,8 @@ async function rows(db: D1Database, id?: number): Promise<z.infer<typeof TrialOu
   return out.sort(
     (a, b) =>
       Number(!a.due) - Number(!b.due) ||
-      (b.last_visit ?? "").localeCompare(a.last_visit ?? "") ||
-      nameKey(a.name).localeCompare(nameKey(b.name)),
+      cmp(b.last_visit ?? "", a.last_visit ?? "") ||
+      cmp(nameKey(a.name), nameKey(b.name)),
   );
 }
 
