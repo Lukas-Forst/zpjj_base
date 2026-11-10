@@ -16,3 +16,6 @@ __pycache__/
 tsconfig.tsbuildinfo
 api_key.md
 ZeroPressure_Retention.xlsm*
+apps/worker/.wrangler/
+apps/worker/.dev.vars
+apps/worker/node_modules/
