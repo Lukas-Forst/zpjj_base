@@ -16,3 +16,9 @@ export const Weekday = z.number().int().min(1, "weekday muss 1..7 sein").max(7, 
 
 export const now = (): string => new Date().toISOString();
 export const isUnique = (e: unknown): boolean => String(e).includes("UNIQUE");
+
+/** YYYY-MM-DD that is a real calendar day. */
+export const DateIn = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "ungültiges Datum")
+  .refine((s) => new Date(`${s}T00:00:00Z`).toISOString().slice(0, 10) === s, "ungültiges Datum");
