@@ -1,5 +1,5 @@
-import { env } from "cloudflare:workers";
-import { beforeEach, expect, it } from "vitest";
+import { env, exports } from "cloudflare:workers";
+import { beforeEach, expect, it, vi } from "vitest";
 import { addDays, isoWeekday, todayBerlin } from "../src/dates";
 import { addSlot, addUser, call, resetDb } from "./helpers";
 
@@ -223,4 +223,40 @@ it("trial status default offen (test_trial_status_default_offen)", async () => {
 });
 it("invalid status rejected (test_invalid_status_rejected)", async () => {
   await expect(env.DB.prepare("INSERT INTO trials (name, name_key, first_date, status) VALUES ('a','a',?, 'x')").bind(D).run()).rejects.toThrow();
+});
+
+it("30-name PUT stays within the D1 statement budget", async () => {
+  const d = last(3);
+  const names = Array.from({ length: 30 }, (_, i) => `Person${String.fromCharCode(97 + (i % 26))}${i}`);
+  await put(d, { total: 40, trial_names: names.slice(0, 15) }); // some exist already, so old links are cleaned too
+  const spy = vi.spyOn(env.DB, "prepare");
+  const batchSpy = vi.spyOn(env.DB, "batch");
+  const r = await put(d, { total: 40, trial_names: names });
+  const batched = batchSpy.mock.calls.reduce((n, c) => n + (c[0] as unknown[]).length, 0);
+  const outside = spy.mock.calls.length - batched;
+  const batches = batchSpy.mock.calls.length;
+  spy.mockRestore();
+  batchSpy.mockRestore();
+  expect(r.status).toBe(200);
+  expect(outside).toBeLessThanOrEqual(12);
+  expect(batches).toBe(1);
+});
+
+it("malformed or non-JSON body gives 422 with a German detail", async () => {
+  const d = last(3);
+  const raw = (body: string, type: string) =>
+    exports.default.fetch(new Request(`http://example.com/api/attendance/${d}`, { method: "PUT", headers: { "X-Test-User": EMAIL, "Content-Type": type }, body }));
+  for (const r of [await raw("{nope", "application/json"), await raw("total=5", "text/plain")]) {
+    expect(r.status).toBe(422);
+    expect(await r.json()).toEqual({ detail: "Ungültige Eingabe." });
+  }
+});
+it("missing required field gives the German default, own German messages stay verbatim", async () => {
+  const d = last(3);
+  const r = await put(d, { total: 5, trial_names: [], guests: "x" });
+  expect(r.status).toBe(422);
+  expect(await r.json()).toEqual({ detail: "Ungültige Eingabe." });
+  const r2 = await call("/api/vacations", { as: EMAIL, json: { start_date: "2026-03-05", end_date: "2026-03-03" } });
+  expect(r2.status).toBe(422);
+  expect(((await r2.json()) as any).detail).toBe("Ende liegt vor dem Beginn");
 });

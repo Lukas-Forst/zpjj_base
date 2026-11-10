@@ -40,13 +40,22 @@ export async function validateEntry(db: D1Database, day: string, body: Attendanc
   if (names.length + body.guests > total) throw bad("Probetrainings und Gäste sind mehr als die Gesamtzahl.");
   if (isoWeekday(day) !== 7 && (open_mat !== null || beginner !== null)) throw bad("Openmat und Anfängerkurs gibt es nur sonntags.");
   const wording: Record<string, string> = { mitglied: "Mitglied", zahlt_pro_besuch: "zahlt pro Besuch" };
-  for (const n of names) {
-    const t = await first<{ id: number; status: string; member_since: string | null }>(
-      db, "SELECT id, status, member_since FROM trials WHERE name_key = ?", nameKey(n));
-    if (!t || !wording[t.status]) continue;
-    const linked = await first(db, "SELECT 1 FROM trial_attendance WHERE trial_id = ? AND date = ?", t.id, day);
-    if (linked || (t.member_since && day < t.member_since)) continue;
-    throw bad(`${n} ist als ${wording[t.status]} markiert und zählt nicht als Probetraining.`);
+  if (names.length) {
+    const keys = names.map(nameKey);
+    const rows = await all<{ id: number; name_key: string; status: string; member_since: string | null; linked: number }>(
+      db,
+      `SELECT t.id, t.name_key, t.status, t.member_since,
+         EXISTS(SELECT 1 FROM trial_attendance WHERE trial_id = t.id AND date = ?) AS linked
+       FROM trials t WHERE t.name_key IN (${keys.map(() => "?").join(",")})`,
+      day, ...keys,
+    );
+    const byKey = new Map(rows.map((r) => [r.name_key, r]));
+    for (const n of names) {
+      const t = byKey.get(nameKey(n));
+      if (!t || !wording[t.status]) continue;
+      if (t.linked || (t.member_since && day < t.member_since)) continue;
+      throw bad(`${n} ist als ${wording[t.status]} markiert und zählt nicht als Probetraining.`);
+    }
   }
   return { total, trial_names: names, guests: body.guests, open_mat, beginner };
 }
