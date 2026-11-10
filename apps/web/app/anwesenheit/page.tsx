@@ -22,9 +22,10 @@ function Anwesenheit() {
   const [perr, setPerr] = useState("");
   const [err, setErr] = useState("");
   const [ov, setOv] = useState<Overview | null>(null);
+  const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
-    const { data } = await api.GET("/api/attendance");
+    const { data } = await api.GET("/api/attendance", { params: { query: { days: 400 } } });
     if (data) setOv(data); else setErr("Daten konnten nicht geladen werden.");
   }, []);
   useEffect(() => { load().catch(() => setErr("Daten konnten nicht geladen werden.")); }, [load]);
@@ -35,7 +36,7 @@ function Anwesenheit() {
 
   // live preview, debounced; a stale response is dropped via `live`
   useEffect(() => {
-    setPreview(null); setPerr("");
+    setPreview(null); setPerr(""); setErr("");
     if (!text.trim() || !date) return;
     let live = true;
     const t = setTimeout(async () => {
@@ -50,11 +51,16 @@ function Anwesenheit() {
 
   const existing = ov?.entries.find((e) => e.date === date);
   const save = async (cancelled: boolean) => {
-    const { error, response } = await api.PUT("/api/attendance/{day}", {
-      params: { path: { day: date } }, body: cancelled ? { cancelled: true } : { text, cancelled: false },
-    });
-    if (!response.ok) { setErr(errText(error, "Speichern fehlgeschlagen.")); return; }
-    setErr(""); setText(""); await load();
+    if (busy) return;
+    if (cancelled && existing && !confirm("Vorhandenen Eintrag durch 'ausgefallen' ersetzen?")) return;
+    setBusy(true);
+    try {
+      const { error, response } = await api.PUT("/api/attendance/{day}", {
+        params: { path: { day: date } }, body: cancelled ? { cancelled: true } : { text, cancelled: false },
+      });
+      if (!response.ok) { setErr(errText(error, "Speichern fehlgeschlagen.")); return; }
+      setText(""); await load();
+    } catch { setErr("Speichern fehlgeschlagen."); } finally { setBusy(false); }
   };
 
   const line = (e: Entry) => e.cancelled
@@ -84,10 +90,10 @@ function Anwesenheit() {
             </div>
           )}
           <div className="flex flex-wrap gap-3">
-            <button type="submit" disabled={!preview} className="min-h-11 rounded-lg bg-accent px-4 text-accent-foreground disabled:opacity-50">
+            <button type="submit" disabled={!preview || !ov || busy} className="min-h-11 rounded-lg bg-accent px-4 text-accent-foreground disabled:opacity-50">
               {existing ? "Ersetzen" : "Speichern"}
             </button>
-            <button type="button" className={btn} onClick={() => save(true)}>Ausgefallen</button>
+            <button type="button" disabled={!date || !ov || busy} className={btn} onClick={() => save(true)}>Ausgefallen</button>
           </div>
         </form>
       </section>
