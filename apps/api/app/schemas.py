@@ -272,6 +272,18 @@ class AttendanceOverview(BaseModel):
     avg_by_weekday: list[WeekdayAvg]
 
 
+class WeekPoint(BaseModel):
+    week_start: date
+    avg: float | None
+    days: int
+
+
+class StatsOut(BaseModel):
+    months: int
+    weeks: list[WeekPoint]
+    weekday_avg: list[WeekdayAvg]
+
+
 class MissingOut(BaseModel):
     date: date | None
 

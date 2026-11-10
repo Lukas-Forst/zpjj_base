@@ -1,3 +1,4 @@
+import calendar
 from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -13,7 +14,9 @@ from app.schemas import (
     AttendanceOut,
     AttendanceOverview,
     MissingOut,
+    StatsOut,
     WeekdayAvg,
+    WeekPoint,
 )
 
 router = APIRouter(prefix="/attendance")
@@ -62,6 +65,11 @@ def _avg(vals: list[int]) -> float | None:
     return round(sum(vals) / len(vals), 1) if vals else None
 
 
+def months_ago(today: date, n: int) -> date:
+    y, m = divmod(today.year * 12 + today.month - 1 - n, 12)
+    return date(y, m + 1, min(today.day, calendar.monthrange(y, m + 1)[1]))
+
+
 @router.get("", response_model=AttendanceOverview)
 def overview(days: int = Query(60, ge=1, le=400), _: User = Depends(current_user),
              db: Session = Depends(get_db)):
@@ -101,6 +109,26 @@ def missing(_: User = Depends(current_user), db: Session = Depends(get_db)):
         if d.isoweekday() in open_days and d not in have:
             return {"date": d}
     return {"date": None}
+
+
+@router.get("/stats", response_model=StatsOut)
+def stats(months: int = Query(3, ge=2, le=3), _: User = Depends(current_user),
+          db: Session = Depends(get_db)):
+    today = today_berlin()
+    this_monday = today - timedelta(days=today.isoweekday() - 1)
+    first = this_monday - timedelta(weeks=11)
+    counted = [a for a in db.scalars(select(Attendance).where(Attendance.date >= min(first, months_ago(today, months))))
+               if not a.cancelled and a.total is not None]
+    weeks = []
+    for i in range(12):
+        ws = first + timedelta(weeks=i)
+        vals = [a.total for a in counted if ws <= a.date < ws + timedelta(days=7)]
+        weeks.append(WeekPoint(week_start=ws, avg=_avg(vals), days=len(vals)))
+    start = months_ago(today, months)
+    win = [a for a in counted if start <= a.date <= today]
+    return StatsOut(months=months, weeks=weeks, weekday_avg=[
+        WeekdayAvg(weekday=wd, avg=_avg([a.total for a in win if a.date.isoweekday() == wd]))
+        for wd in range(1, 8)])
 
 
 @router.put("/{day}", response_model=AttendanceOut)
