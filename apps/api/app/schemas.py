@@ -269,3 +269,14 @@ class AttendanceOut(BaseModel):
     names: list[str]
     updated_by_name: str | None
     updated_at: datetime
+
+
+class WeekdayAvg(BaseModel):
+    weekday: int
+    avg: float | None
+
+
+class AttendanceOverview(BaseModel):
+    entries: list[AttendanceOut]
+    avg_14d: float | None
+    avg_by_weekday: list[WeekdayAvg]

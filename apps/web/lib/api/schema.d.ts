@@ -21,6 +21,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Overview */
+        get: operations["overview_api_attendance_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/attendance/missing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Missing */
+        get: operations["missing_api_attendance_missing_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/attendance/parse": {
         parameters: {
             query?: never;
@@ -342,6 +376,15 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+        };
+        /** AttendanceOverview */
+        AttendanceOverview: {
+            /** Entries */
+            entries: components["schemas"]["AttendanceOut"][];
+            /** Avg 14D */
+            avg_14d: number | null;
+            /** Avg By Weekday */
+            avg_by_weekday: components["schemas"]["WeekdayAvg"][];
         };
         /** AttendanceParseIn */
         AttendanceParseIn: {
@@ -690,6 +733,13 @@ export interface components {
             /** Context */
             ctx?: Record<string, never>;
         };
+        /** WeekdayAvg */
+        WeekdayAvg: {
+            /** Weekday */
+            weekday: number;
+            /** Avg */
+            avg: number | null;
+        };
     };
     responses: never;
     parameters: never;
@@ -700,6 +750,57 @@ export interface components {
 export type $defs = Record<string, never>;
 export interface operations {
     healthz_healthz_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    overview_api_attendance_get: {
+        parameters: {
+            query?: {
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceOverview"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    missing_api_attendance_missing_get: {
         parameters: {
             query?: never;
             header?: never;
