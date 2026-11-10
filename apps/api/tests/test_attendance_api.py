@@ -162,3 +162,43 @@ def test_input_caps(client, h):
     assert ok([f"Ab{i}" for i in range(31)]) == 422
     assert ok(["a" * 101]) == 422
     assert ok(["a" * 100]) == 200
+
+
+def _flag(client, h, app, name, since=None):
+    tid = next(t.id for t in rows(app, Trial) if t.name == name)
+    body = {"status": "mitglied", **({"member_since": since.isoformat()} if since else {})}
+    assert client.patch(f"/api/trials/{tid}", headers=h, json=body).status_code == 200
+
+
+def _statuses(client, h):
+    return {t["name"]: t["status"] for t in client.get("/api/trials", headers=h).json()}
+
+
+def test_resave_keeps_flagged_person_linked_to_day(client, app, h):
+    d = last(3)
+    assert put(client, h, d, total=5, trial_names=["Zed"]).status_code == 200
+    _flag(client, h, app, "Zed")
+    assert put(client, h, d, total=5, trial_names=["Zed"]).status_code == 200
+    assert _statuses(client, h) == {"Zed": "mitglied"}
+
+
+def test_dropping_or_cancelling_keeps_flagged_person(client, app, h):
+    d = last(3)
+    put(client, h, d, total=5, trial_names=["Zed"])
+    _flag(client, h, app, "Zed")
+    assert put(client, h, d, total=5).status_code == 200
+    assert _statuses(client, h) == {"Zed": "mitglied"}
+    put(client, h, d, total=5, trial_names=["Zed"])  # rejected now (no link), fine either way
+    assert put(client, h, d, cancelled=True).status_code == 200
+    assert _statuses(client, h) == {"Zed": "mitglied"}
+
+
+def test_flagged_person_before_member_since_allowed_after_rejected(client, app, h):
+    _imported(app, "Anna", last(3, 3))
+    d = last(3)
+    _flag(client, h, app, "Anna", since=d + timedelta(days=1))
+    assert put(client, h, d, total=5, trial_names=["Anna"]).status_code == 200
+    _flag(client, h, app, "Anna", since=d)
+    put(client, h, d, total=5)  # unlink
+    r = put(client, h, d, total=5, trial_names=["Anna"])
+    assert r.status_code == 422 and "Anna" in r.json()["detail"]

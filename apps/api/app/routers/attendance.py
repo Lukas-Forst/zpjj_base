@@ -56,7 +56,10 @@ def _entry(db: Session, day: date, body: AttendanceIn) -> DayEntry | None:
     wording = {TrialStatus.mitglied: "Mitglied", TrialStatus.zahlt_pro_besuch: "zahlt pro Besuch"}
     for n in names:
         t = db.scalar(select(Trial).where(Trial.name_key == n.casefold()))
-        if t and t.status in wording:
+        if t and t.status in wording and not (
+            db.get(TrialAttendance, (t.id, day))
+            or (t.member_since and day < t.member_since)
+        ):
             raise HTTPException(422, f"{n} ist als {wording[t.status]} markiert und zählt nicht als Probetraining.")
     return DayEntry(body.total, names, body.guests, body.open_mat, body.beginner)
 

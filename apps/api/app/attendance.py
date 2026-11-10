@@ -4,7 +4,7 @@ from datetime import date
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
-from app.models import Attendance, Trial, TrialAttendance, User
+from app.models import Attendance, Trial, TrialAttendance, TrialStatus, User
 
 
 @dataclass(frozen=True)
@@ -45,6 +45,8 @@ def save_day(db: Session, day: date, parsed: DayEntry | None, user: User) -> Att
     db.flush()
     for tid in old - linked:  # link for this day removed
         t = db.get(Trial, tid)
+        if t.status != TrialStatus.offen:
+            continue  # decided people (and their flag) are never deleted or re-dated
         first = db.scalar(select(func.min(TrialAttendance.date))
                           .where(TrialAttendance.trial_id == tid))
         if t.first_date != day:
