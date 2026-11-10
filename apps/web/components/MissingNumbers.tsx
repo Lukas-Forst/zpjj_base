@@ -15,7 +15,7 @@ export function MissingNumbers() {
   return (
     <div className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm">
       <p className="text-sm font-medium">Zahlen von {WEEKDAYS[isoWeekday(m.date)]} {deDate(m.date)}. fehlen</p>
-      <a href={`/anwesenheit/?datum=${m.date}`} className="rounded-xl bg-neutral-900 px-3 py-2 text-sm font-semibold text-white">Eintragen</a>
+      <a href={`/anwesenheit/?datum=${m.date}`} className="inline-flex min-h-11 items-center rounded-xl bg-neutral-900 px-3 py-2 text-sm font-semibold text-white">Eintragen</a>
     </div>
   );
 }
