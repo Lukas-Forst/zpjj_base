@@ -1,6 +1,7 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { auth } from "./auth";
 import { HttpError } from "./errors";
+import { attendance } from "./routers/attendance";
 import { coverage } from "./routers/coverage";
 import { me } from "./routers/me";
 import { presets } from "./routers/presets";
@@ -34,6 +35,7 @@ export function createApp(): OpenAPIHono<AppEnv> {
   app.route("/api", presets);
   app.route("/api", vacations);
   app.route("/api", coverage);
+  app.route("/api", attendance);
 
   app.notFound((c) => c.json({ detail: "Nicht gefunden." }, 404));
   app.onError((err, c) => {
