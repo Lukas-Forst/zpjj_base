@@ -33,6 +33,10 @@ describe("WeeklyLine", () => {
     expect(screen.getByRole("img").getAttribute("aria-label")).toMatch(/6/);
     expect(screen.getByText("19.10.")).toBeInTheDocument();
   });
+  it("prints a date under every week, also for a gap week", () => {
+    render(<WeeklyLine weeks={weeks} />);
+    for (const d of ["05.10.", "12.10.", "19.10."]) expect(screen.getByText(d)).toBeInTheDocument();
+  });
 });
 
 describe("Stats", () => {

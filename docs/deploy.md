@@ -31,6 +31,8 @@ fly ssh console -C "python -m app.cli seed-schedule"
 fly ssh console -C "python -m app.cli seed-presets"   # 4 Beispiel-Presets ("(Beispiel)"), das Team passt sie im Timer an
 ```
 
+Der Seed legt auch die zwei Rheinheim-Einheiten an (Mo und Mi, 19:30–21:30 No-Gi, Ort "Rheinheim"). Bestehende Einheiten fasst er nicht an: Auf einem schon befüllten System danach auf der Seite **Stundenplan** beim Mittwoch 20:00 (Hauptstandort) Tim als Trainer entfernen, sodass nur Chris übrig bleibt.
+
 ## 3. Cloudflare Pages (manuell)
 1. Pages-Projekt anlegen (Direct Upload oder Git). Build in `apps/web`: `npm ci && npm run build`, Output `out`.
 2. Die Function liegt in `apps/web/functions/api/[[path]].ts` (Wurzel = `apps/web`). Deploy per CLI: `cd apps/web && npx wrangler pages deploy out --project-name zpjj-base` (wrangler nimmt `./functions` aus dem aktuellen Verzeichnis).

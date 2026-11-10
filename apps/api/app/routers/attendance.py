@@ -26,8 +26,8 @@ MAX_COUNT = 1000
 def _check_day(db: Session, day: date) -> None:
     if day > today_berlin():
         raise HTTPException(422, "Für die Zukunft kann nichts eingetragen werden.")
-    if not db.scalar(select(Slot.id).where(Slot.weekday == day.isoweekday(),
-                                           Slot.active).limit(1)):
+    if not db.scalar(select(Slot.id).where(Slot.weekday == day.isoweekday(), Slot.active,
+                                           Slot.location.is_(None)).limit(1)):
         raise HTTPException(422, "An diesem Tag ist kein Training.")
 
 
@@ -105,7 +105,7 @@ def overview(days: int = Query(60, ge=1, le=400), _: User = Depends(current_user
 @router.get("/missing", response_model=MissingOut)
 def missing(_: User = Depends(current_user), db: Session = Depends(get_db)):
     today = today_berlin()
-    open_days = set(db.scalars(select(Slot.weekday).where(Slot.active)))
+    open_days = set(db.scalars(select(Slot.weekday).where(Slot.active, Slot.location.is_(None))))
     have = set(db.scalars(select(Attendance.date)))
     for i in range(1, 15):
         d = today - timedelta(days=i)

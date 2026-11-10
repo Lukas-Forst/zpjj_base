@@ -47,7 +47,9 @@ def _get(db: Session, slot_id: int) -> Slot:
 def patch_slot(slot_id: int, body: SlotPatch, db: Session = Depends(get_db)):
     slot = _get(db, slot_id)
     changes = body.model_dump(exclude_unset=True)
-    if any(v is None for v in changes.values()):
+    if "location" in changes:  # "" or null = home gym
+        changes["location"] = (changes["location"] or "").strip()[:50] or None
+    if any(k != "location" and v is None for k, v in changes.items()):
         raise HTTPException(422, "Felder dürfen nicht null sein.")
     for k, v in changes.items():
         setattr(slot, k, v)

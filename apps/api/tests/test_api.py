@@ -43,6 +43,18 @@ def test_slot_crud_and_sorting(client, admin):
                                            "end_time": "09:00:00"}, headers=admin).status_code == 409
 
 
+def test_slot_location_create_patch_and_default(client, admin):
+    plain = client.post("/api/slots", json=SLOT, headers=admin).json()
+    assert plain["location"] is None
+    body = {**SLOT, "weekday": 3, "location": "Rheinheim"}
+    created = client.post("/api/slots", json=body, headers=admin).json()
+    assert created["location"] == "Rheinheim"
+    r = client.patch(f"/api/slots/{plain['id']}", json={"location": "Rheinheim"}, headers=admin)
+    assert r.status_code == 200 and r.json()["location"] == "Rheinheim"
+    r = client.patch(f"/api/slots/{plain['id']}", json={"location": ""}, headers=admin)
+    assert r.status_code == 200 and r.json()["location"] is None  # empty = main location
+
+
 def test_slot_validation(client, admin):
     assert client.post("/api/slots", json={**SLOT, "weekday": 8}, headers=admin).status_code == 422
     assert client.post("/api/slots", json={**SLOT, "end_time": "17:00:00"}, headers=admin).status_code == 422
@@ -109,11 +121,16 @@ def test_seed_idempotent_and_correct(app, tmp_path: Path):
         seed_schedule(db, f)
         seed_schedule(db, f)
         slots = db.scalars(select(Slot).order_by(Slot.weekday, Slot.start_time)).all()
-        assert len(slots) == 10
+        assert len(slots) == 12
         assert db.scalars(select(User)).all().__len__() == 5
         fr_gi = next(s for s in slots if s.weekday == 5 and s.kind == "gi")
         assert [t.display_name for t in fr_gi.trainers] == ["Can", "Tim"]
         assert next(s for s in slots if s.kind == "open_mat").trainers == []
+        mi_base = next(s for s in slots if s.weekday == 3 and s.location is None)
+        assert [t.display_name for t in mi_base.trainers] == ["Chris"]
+        rh = [(s.weekday, str(s.start_time)[:5], str(s.end_time)[:5], s.kind, [t.display_name for t in s.trainers])
+              for s in slots if s.location == "Rheinheim"]
+        assert rh == [(1, "19:30", "21:30", "no_gi", ["Nico"]), (3, "19:30", "21:30", "no_gi", ["Tim"])]
 
 
 def test_seed_aborts_cleanly(app, tmp_path: Path):

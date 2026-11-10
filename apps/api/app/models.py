@@ -61,6 +61,7 @@ class Slot(Base):
     kind: Mapped[SlotKind] = mapped_column(_enum(SlotKind, "slot_kind"))
     active: Mapped[bool] = mapped_column(default=True)
     sort_order: Mapped[int] = mapped_column(default=0)
+    location: Mapped[str | None] = mapped_column(sa.String(50), nullable=True)  # None = home gym
     trainers: Mapped[list[User]] = relationship(secondary="slot_trainers", order_by=User.id)
 
 

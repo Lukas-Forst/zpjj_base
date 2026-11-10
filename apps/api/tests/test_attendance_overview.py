@@ -76,3 +76,16 @@ def test_missing_has_response_model(client):
     props = client.app.openapi()["components"]["schemas"]["MissingOut"]["properties"]
     assert set(props) == {"date"}
     assert {"type": "null"} in props["date"]["anyOf"]
+
+
+def test_missing_ignores_days_with_only_a_rheinheim_class(client, app, h):
+    with app.state.session_factory() as db:
+        db.add(Slot(weekday=1, start_time=time(19, 30), end_time=time(21, 30),
+                    kind=SlotKind.no_gi, location="Rheinheim"))
+        db.commit()
+    for back in range(1, 15):  # every home-gym day of the lookback window is recorded
+        d = today_berlin() - timedelta(days=back)
+        if d.isoweekday() != 1:
+            mk(app, d, total=5)
+    # only Mondays are left, and a Rheinheim-only day never counts as missing
+    assert client.get("/api/attendance/missing", headers=h).json() == {"date": None}

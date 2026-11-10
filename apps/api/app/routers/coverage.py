@@ -1,14 +1,23 @@
 from datetime import date as Date
+from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.auth import current_user, get_db
-from app.coverage import compute_gaps
+from app.coverage import compute_gaps, slot_status
 from app.dates import today_berlin
 from app.models import Role, Slot, Substitute, User, Vacation
-from app.schemas import GapOut, SubstituteIn, SubstituteOut
+from app.schemas import (
+    GapOut,
+    PlanDay,
+    PlanSlot,
+    PlanSubstitute,
+    PlanWeek,
+    SubstituteIn,
+    SubstituteOut,
+)
 
 router = APIRouter(prefix="/coverage")
 
@@ -29,8 +38,48 @@ def coverage(_: User = Depends(current_user), db: Session = Depends(get_db)):
     names = {u.id: u.display_name for u in db.scalars(select(User))}
     return [GapOut(date=g.date, slot_id=g.slot_id, weekday=by_slot[g.slot_id].weekday,
                    start_time=by_slot[g.slot_id].start_time, kind=by_slot[g.slot_id].kind,
-                   level=g.level, absent=[names[i] for i in g.absent_user_ids])
+                   level=g.level, absent=[names[i] for i in g.absent_user_ids],
+                   location=by_slot[g.slot_id].location)
             for g in compute_gaps(slots, vacs, subs, today)]
+
+
+@router.get("/plan", response_model=list[PlanWeek])
+def plan(_: User = Depends(current_user), db: Session = Depends(get_db)):
+    """This week and the next two (Mon-Sun), from today on, one card per active slot."""
+    today = today_berlin()
+    slots, vacs, subs = _load(db, today)
+    slots.sort(key=lambda s: (s.start_time, s.id))
+    names = {u.id: u.display_name for u in db.scalars(select(User))}
+    monday = today - timedelta(days=today.isoweekday() - 1)
+    weeks = []
+    for i in range(3):
+        start = monday + timedelta(days=7 * i)
+        days, open_, partial = [], 0, 0
+        for o in range(7):
+            d = start + timedelta(days=o)
+            if d < today:
+                continue
+            off = {v.user_id for v in vacs if v.start_date <= d <= v.end_date}
+            cards = []
+            for s in slots:
+                if s.weekday != d.isoweekday():
+                    continue
+                status, absent = slot_status(s, d, off, subs)
+                open_ += status == "unbesetzt"
+                partial += status == "teilweise"
+                cards.append(PlanSlot(
+                    slot_id=s.id, start_time=s.start_time, kind=s.kind, location=s.location,
+                    status=status,
+                    trainers=[t.display_name for t in s.trainers if t.active and t.is_trainer],
+                    absent=[names[a] for a in absent],
+                    substitutes=[PlanSubstitute(user_id=x.user_id, user_name=names[x.user_id])
+                                 for x in subs
+                                 if x.slot_id == s.id and x.date == d and x.user_id not in off]))
+            if cards:
+                days.append(PlanDay(date=d, weekday=d.isoweekday(), slots=cards))
+        weeks.append(PlanWeek(week_start=start, iso_week=start.isocalendar().week,
+                              unbesetzt=open_, teilweise=partial, days=days))
+    return weeks
 
 
 @router.get("/substitutes", response_model=list[SubstituteOut])

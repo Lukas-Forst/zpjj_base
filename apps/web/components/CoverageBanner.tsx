@@ -8,7 +8,7 @@ type Gap = components["schemas"]["GapOut"];
 type Sync = components["schemas"]["SyncOut"];
 
 export const gapLabel = (g: Gap) =>
-  `${WEEKDAYS[g.weekday]} ${deDate(g.date)}, ${hhmm(g.start_time)} ${KIND_LABEL[g.kind]}`;
+  `${WEEKDAYS[g.weekday]} ${deDate(g.date)}, ${hhmm(g.start_time)} ${KIND_LABEL[g.kind]}${g.location ? ` (${g.location})` : ""}`;
 
 export function CoverageBanner() {
   const [gaps, setGaps] = useState<Gap[]>([]);

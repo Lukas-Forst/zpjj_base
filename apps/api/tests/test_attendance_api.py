@@ -83,6 +83,15 @@ def test_rejects_future_and_closed_day(client, h):
     assert r.status_code == 422 and r.json()["detail"] == "An diesem Tag ist kein Training."
 
 
+def test_rheinheim_slot_does_not_open_a_day(client, app, h):
+    with app.state.session_factory() as db:  # Monday only has a Rheinheim class
+        db.add(Slot(weekday=1, start_time=time(19, 30), end_time=time(21, 30),
+                    kind=SlotKind.no_gi, location="Rheinheim"))
+        db.commit()
+    r = put(client, h, last(1), total=1)
+    assert r.status_code == 422 and r.json()["detail"] == "An diesem Tag ist kein Training."
+
+
 def test_rejects_absurd_count(client, h):
     assert put(client, h, last(3), total=5000).status_code == 422
     assert put(client, h, last(7), total=5, open_mat=5000).status_code == 422

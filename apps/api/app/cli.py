@@ -14,12 +14,12 @@ from app.db import Base, make_engine, make_session_factory
 from app.models import Role, Slot, SlotKind, TimerMode, TimerPreset, User
 
 SEED_DIR = Path(__file__).resolve().parent.parent / "seed"
-D = {"Di": 2, "Mi": 3, "Do": 4, "Fr": 5, "Sa": 6, "So": 7}
+D = {"Mo": 1, "Di": 2, "Mi": 3, "Do": 4, "Fr": 5, "Sa": 6, "So": 7}
 NG, G, OM = SlotKind.no_gi, SlotKind.gi, SlotKind.open_mat
 # Source: https://zpjj.de/schedule (Monday is closed)
 SCHEDULE = [
     ("Di", "18:00", "20:00", NG, ["Nico", "Can"]),
-    ("Mi", "20:00", "22:00", NG, ["Tim", "Chris"]),
+    ("Mi", "20:00", "22:00", NG, ["Chris"]),  # Tim teaches in Rheinheim on Wednesdays
     ("Do", "18:00", "20:00", NG, ["Nico", "Lukas"]),
     ("Fr", "19:00", "20:30", NG, ["Tim", "Can"]),
     ("Fr", "20:30", "22:00", G, ["Tim", "Can"]),
@@ -28,6 +28,11 @@ SCHEDULE = [
     ("So", "10:00", "10:45", NG, ["Tim", "Lukas"]),
     ("So", "10:45", "11:30", G, ["Tim", "Lukas"]),
     ("So", "11:30", "13:00", OM, []),
+]
+# Second location: classes there never count for attendance numbers (Slot.location is set).
+RHEINHEIM = [
+    ("Mo", "19:30", "21:30", NG, ["Nico"]),
+    ("Mi", "19:30", "21:30", NG, ["Tim"]),
 ]
 
 
@@ -46,17 +51,18 @@ def seed_schedule(db: Session, users_file: Path) -> None:
                         is_trainer=bool(e.get("is_trainer", False))))
     db.flush()
     by_name = {u.display_name.casefold(): u for u in db.scalars(select(User))}
-    needed = {n for *_, names in SCHEDULE for n in names}
+    needed = {n for *_, names in SCHEDULE + RHEINHEIM for n in names}
     missing = sorted(n for n in needed if n.casefold() not in by_name)
     if missing:
         db.rollback()
         raise SystemExit(f"No user (display_name) for trainer(s): {', '.join(missing)}")
-    for i, (day, start, end, kind, names) in enumerate(SCHEDULE):
+    rows = [(r, None) for r in SCHEDULE] + [(r, "Rheinheim") for r in RHEINHEIM]
+    for i, ((day, start, end, kind, names), location) in enumerate(rows):
         wd, st = D[day], _t(start)
         if db.scalar(select(Slot).where(Slot.weekday == wd, Slot.start_time == st, Slot.kind == kind)):
             continue  # keep existing slots (and admin-edited trainers) untouched
         db.add(Slot(weekday=wd, start_time=st, end_time=_t(end), kind=kind, sort_order=i,
-                    trainers=[by_name[n.casefold()] for n in names]))
+                    location=location, trainers=[by_name[n.casefold()] for n in names]))
     db.commit()
 
 

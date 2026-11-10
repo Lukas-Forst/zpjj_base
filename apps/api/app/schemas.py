@@ -66,6 +66,7 @@ class SlotOut(BaseModel):
     kind: SlotKind
     active: bool
     sort_order: int
+    location: str | None = None
     trainers: list[TrainerOut]
 
 
@@ -75,9 +76,11 @@ class SlotCreate(BaseModel):
     end_time: time
     kind: SlotKind
     sort_order: int = 0
+    location: str | None = None
 
     @model_validator(mode="after")
     def _check(self):
+        self.location = (self.location or "").strip()[:50] or None
         if not 1 <= self.weekday <= 7:
             raise ValueError("weekday muss 1..7 sein")
         if self.end_time <= self.start_time:
@@ -92,6 +95,7 @@ class SlotPatch(BaseModel):
     kind: SlotKind | None = None
     active: bool | None = None
     sort_order: int | None = None
+    location: str | None = None  # "" = back to the home gym
 
     @field_validator("weekday")
     @classmethod
@@ -198,6 +202,37 @@ class GapOut(BaseModel):
     kind: SlotKind
     level: str  # unbesetzt | teilweise
     absent: list[str]
+    location: str | None = None
+
+
+class PlanSubstitute(BaseModel):
+    user_id: int
+    user_name: str
+
+
+class PlanSlot(BaseModel):
+    slot_id: int
+    start_time: time
+    kind: SlotKind
+    location: str | None = None
+    status: str  # besetzt | teilweise | unbesetzt | vertreten | nicht_geprueft
+    trainers: list[str]
+    absent: list[str]
+    substitutes: list[PlanSubstitute]
+
+
+class PlanDay(BaseModel):
+    date: date
+    weekday: int
+    slots: list[PlanSlot]
+
+
+class PlanWeek(BaseModel):
+    week_start: date
+    iso_week: int
+    unbesetzt: int
+    teilweise: int
+    days: list[PlanDay]
 
 
 class SubstituteOut(BaseModel):
