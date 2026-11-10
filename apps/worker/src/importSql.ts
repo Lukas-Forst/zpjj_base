@@ -1,4 +1,4 @@
-import { nameKey } from "./nameKey";
+import { cleanName, nameKey } from "./nameKey";
 import { q } from "./sql";
 
 type Cell = Date | number | string | null | undefined;
@@ -24,7 +24,7 @@ export function buildImportSql(input: ImportInput, now = new Date().toISOString(
   const members = new Map<string, string | null>();
 
   const see = (raw: string, d: string) => {
-    const name = raw.trim();
+    const name = cleanName(raw);
     if (!name) return;
     const k = nameKey(name);
     const s = seen.get(k);
@@ -54,7 +54,7 @@ export function buildImportSql(input: ImportInput, now = new Date().toISOString(
   }
   for (const r of input.probe.slice(1)) {
     for (const v of [r[1], r[2]]) if (r[0] && day(v)) see(str(r[0]), day(v)!);
-    const name = str(r[0]).trim();
+    const name = cleanName(str(r[0]));
     if (name && (str(r[7]).trim().toLowerCase() === "mitglied geworden" || str(r[3]).trim().toLowerCase() === "ja")) members.set(nameKey(name), day(r[4]));
   }
 

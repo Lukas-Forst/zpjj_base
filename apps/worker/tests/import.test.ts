@@ -95,4 +95,45 @@ describe("import", () => {
     await run(buildImportSql(i).sql);
     expect(await rows("SELECT name FROM trials WHERE name_key LIKE 'j%'")).toHaveLength(1);
   });
+
+  it("(a) double space imported, API 'Max Muster' resolves to ONE person", async () => {
+    await addUser({ email: "t@example.com" });
+    await env.DB.exec("INSERT INTO slots (weekday,start_time,end_time,kind) VALUES (2,'18:00:00','20:00:00','no_gi')");
+    const i = input();
+    i.training.push([D("2025-01-21"), null, null, null, "BJJ", null, 8, 1, null, null, "Max  Muster"]);
+    await run(buildImportSql(i).sql);
+    const r = await call("/api/attendance/2025-01-14", { as: "t@example.com", method: "PUT", json: { cancelled: false, total: 5, trial_names: ["Max Muster"], guests: 0 } });
+    expect(r.status).toBe(200);
+    expect(await rows("SELECT name FROM trials WHERE name_key LIKE 'max%'")).toEqual([{ name: "Max Muster" }]);
+  });
+
+  it("(b) API rejects whitespace-variant duplicates", async () => {
+    await addUser({ email: "t@example.com" });
+    await env.DB.exec("INSERT INTO slots (weekday,start_time,end_time,kind) VALUES (2,'18:00:00','20:00:00','no_gi')");
+    const r = await call("/api/attendance/2025-01-14", { as: "t@example.com", method: "PUT", json: { cancelled: false, total: 5, trial_names: ["Max  Muster", "max muster"], guests: 0 } });
+    expect(r.status).toBe(422);
+    expect((await r.json() as { detail: string }).detail).toBe("Jeder Name darf nur einmal vorkommen.");
+    const e = await call("/api/attendance/2025-01-14", { as: "t@example.com", method: "PUT", json: { cancelled: false, total: 5, trial_names: [" \t "], guests: 0 } });
+    expect((await e.json() as { detail: string }).detail).toBe("Namen dürfen nicht leer sein.");
+  });
+
+  it("(c) newline/tab in a name: one clean line, one person", async () => {
+    const i = input();
+    i.training.push([D("2025-01-21"), null, null, null, "BJJ", null, 8, 1, null, null, "Max\n\tMuster, max muster"]);
+    const r = buildImportSql(i);
+    expect(r.sql.split("\n").every((l) => l === "" || l.endsWith(";"))).toBe(true);
+    await run(r.sql);
+    expect(await rows("SELECT name FROM trials WHERE name_key LIKE 'max%'")).toEqual([{ name: "Max Muster" }]);
+  });
+
+  it("(d) hostile name stored literally; text in a count cell is padding-like skip", async () => {
+    const i = input();
+    i.training.push([D("2025-01-21"), null, null, null, "BJJ", null, 8, 1, null, null, "'; DROP TABLE trials;--"]);
+    i.training.push([D("2025-01-22"), null, null, null, "BJJ", null, "viele", 1, null, null, "Zed"]);
+    const r = buildImportSql(i);
+    expect(r.skipped).toBe(2);
+    await run(r.sql);
+    expect(await rows("SELECT name FROM trials WHERE name LIKE '%DROP%'")).toEqual([{ name: "'; DROP TABLE trials;--" }]);
+    expect(await rows("SELECT 1 FROM trials WHERE name = 'Zed'")).toEqual([]);
+  });
 });

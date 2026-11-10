@@ -1,5 +1,6 @@
 // npm run import-excel -- ../../ZeroPressure_Retention.xlsm > import.sql   (counts go to stderr)
 import ExcelJS from "exceljs";
+import { cellText } from "../src/cellText";
 import { buildImportSql, type ImportInput } from "../src/importSql";
 
 type Cell = ImportInput["training"][number][number];
@@ -9,9 +10,7 @@ function rows(ws: ExcelJS.Worksheet | undefined, width: number): Cell[][] {
   const out: Cell[][] = [];
   ws.eachRow({ includeEmpty: true }, (row) => {
     out.push(Array.from({ length: width }, (_, i) => {
-      let v = row.getCell(i + 1).value as unknown; // formula cells: cached result
-      if (v && typeof v === "object" && !(v instanceof Date) && "result" in v) v = (v as { result: unknown }).result;
-      return v instanceof Date || typeof v === "number" || typeof v === "string" ? v : null;
+      return cellText(row.getCell(i + 1).value);
     }));
   });
   return out;

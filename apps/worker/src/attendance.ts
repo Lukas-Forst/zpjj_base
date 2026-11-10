@@ -2,7 +2,7 @@ import { all, batch, first, stmt } from "./db";
 import { HttpError } from "./errors";
 import { isoWeekday, todayBerlin } from "./dates";
 import { now } from "./schemas/common";
-import { nameKey } from "./nameKey";
+import { cleanName, nameKey } from "./nameKey";
 
 export type DayEntry = { total: number; trial_names: string[]; guests: number; open_mat: number | null; beginner: number | null };
 export type AttendanceInBody = { cancelled: boolean; total?: number | null; trial_names: string[]; guests: number; open_mat?: number | null; beginner?: number | null };
@@ -29,7 +29,7 @@ export async function validateEntry(db: D1Database, day: string, body: Attendanc
   const total = body.total;
   const open_mat = body.open_mat ?? null;
   const beginner = body.beginner ?? null;
-  const names = body.trial_names.map((n) => n.trim());
+  const names = body.trial_names.map(cleanName);
   if (!names.every(Boolean)) throw bad("Namen dürfen nicht leer sein.");
   if (new Set(names.map(nameKey)).size !== names.length) throw bad("Jeder Name darf nur einmal vorkommen.");
   if (names.length > 30 || names.some((n) => [...n].length > 100)) throw bad("Zu viele oder zu lange Namen.");
