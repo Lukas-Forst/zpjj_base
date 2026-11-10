@@ -1,6 +1,6 @@
 import { env } from "cloudflare:workers";
 import { beforeEach, describe, expect, it } from "vitest";
-import { addSlot, call, resetDb } from "./helpers";
+import { addSlot, addUser, call, resetDb } from "./helpers";
 
 beforeEach(resetDb);
 
@@ -22,7 +22,8 @@ describe("app", () => {
     expect(await r.text()).toContain("stub-assets");
   });
   it("unknown api route is 404 with detail", async () => {
-    const r = await call("/api/nope");
+    await addUser({ email: "t@example.com" });
+    const r = await call("/api/nope", { as: "t@example.com" });
     expect(r.status).toBe(404);
     expect(typeof ((await r.json()) as { detail: string }).detail).toBe("string");
   });

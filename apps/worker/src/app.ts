@@ -1,5 +1,7 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
+import { auth } from "./auth";
 import { HttpError } from "./errors";
+import { me } from "./routers/me";
 import type { AppEnv } from "./types";
 
 export function createApp(): OpenAPIHono<AppEnv> {
@@ -19,6 +21,9 @@ export function createApp(): OpenAPIHono<AppEnv> {
   });
 
   app.get("/healthz", (c) => c.json({ ok: true }));
+
+  app.use("/api/*", auth);
+  app.route("/api", me);
 
   app.notFound((c) => c.json({ detail: "Nicht gefunden." }, 404));
   app.onError((err, c) => {
