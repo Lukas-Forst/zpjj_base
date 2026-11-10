@@ -47,4 +47,18 @@ describe("Stats", () => {
     await u.click(screen.getByRole("button", { name: "2 Monate" }));
     await waitFor(() => expect(get).toHaveBeenLastCalledWith("/api/attendance/stats", { params: { query: { months: 2 } } }));
   });
+  it("drops old bars while loading the other range and shows only the alert on failure", async () => {
+    const u = userEvent.setup();
+    render(<Stats />);
+    expect(await screen.findAllByTestId("bar")).toHaveLength(1);
+    let rej!: (e: Error) => void;
+    get.mockReturnValueOnce(new Promise((_, r) => { rej = r; }) as never);
+    await u.click(screen.getByRole("button", { name: "2 Monate" }));
+    expect(screen.queryAllByTestId("bar")).toHaveLength(0);
+    expect(screen.getByText("Lädt …")).toBeInTheDocument();
+    rej(new Error("x"));
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+    expect(screen.queryAllByTestId("bar")).toHaveLength(0);
+    expect(screen.queryByText("Lädt …")).not.toBeInTheDocument();
+  });
 });

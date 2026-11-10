@@ -12,10 +12,10 @@ const field = "min-h-11 rounded-lg border border-neutral-300 px-2";
 const btn = "min-h-11 rounded-lg border border-accent px-4 text-accent disabled:opacity-50";
 const num = (s: string) => (s.trim() === "" ? 0 : Math.max(0, Math.floor(Number(s)) || 0));
 
-function NumField({ label, value, set, required }: { label: string; value: string; set: (v: string) => void; required?: boolean }) {
+function NumField({ label, value, set, required, max }: { label: string; value: string; set: (v: string) => void; required?: boolean; max?: number }) {
   return (
     <label className="flex flex-col text-sm">{label}
-      <input type="number" min={0} inputMode="numeric" required={required} className={field} value={value} onChange={(e) => set(e.target.value)} />
+      <input type="number" min={0} max={max} inputMode="numeric" required={required} className={field} value={value} onChange={(e) => set(e.target.value)} />
     </label>
   );
 }
@@ -33,7 +33,7 @@ export function EntryForm({ day, existing, trials, onSaved }: { day: string; exi
   const [busy, setBusy] = useState(false);
   const saving = useRef(false);
 
-  const count = num(nTrials);
+  const count = Math.min(30, num(nTrials));
   const edit = (f: (v: string) => void) => (v: string) => { setErr(""); f(v); };
   const nameAt = (i: number) => names[i] ?? "";
 
@@ -67,15 +67,15 @@ export function EntryForm({ day, existing, trials, onSaved }: { day: string; exi
       {sunday
         ? <NumField label="Mitglieder (10:00–11:30)" value={members} set={edit(setMembers)} required />
         : <NumField label="Teilnehmer gesamt" value={total} set={edit(setTotal)} required />}
-      <NumField label="Davon Probetraining" value={nTrials} set={edit(setNTrials)} />
+      <NumField label="Davon Probetraining" value={nTrials} set={edit(setNTrials)} max={30} />
       {Array.from({ length: count }, (_, i) => (
         <label key={i} className="flex flex-col text-sm">Name Probetraining {i + 1}
-          <input list="known-trials" required autoComplete="off" className={field} value={nameAt(i)}
+          <input list="known-trials" required maxLength={100} autoComplete="off" className={field} value={nameAt(i)}
             onChange={(e) => { setErr(""); setNames((p) => { const n = [...p]; n[i] = e.target.value; return n; }); }} />
         </label>
       ))}
       <datalist id="known-trials">
-        {known.map((t) => <option key={t.id} value={t.name}>{t.name} ({t.visits} Besuche)</option>)}
+        {known.map((t) => <option key={t.id} value={t.name}>{t.name} ({t.visits} Besuch{t.visits === 1 ? "" : "e"})</option>)}
       </datalist>
       <NumField label={sunday ? "Davon Gäste" : "Davon Gäste (zahlen pro Besuch)"} value={guests} set={edit(setGuests)} />
       {sunday && <>

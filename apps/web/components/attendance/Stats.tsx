@@ -13,7 +13,7 @@ export function Stats() {
   const [err, setErr] = useState(false);
   useEffect(() => {
     let live = true;
-    setErr(false);
+    setErr(false); setStats(null);
     api.GET("/api/attendance/stats", { params: { query: { months } } })
       .then(({ data }) => { if (!live) return; if (data) setStats(data); else setErr(true); })
       .catch(() => live && setErr(true));
@@ -29,6 +29,7 @@ export function Stats() {
         ))}
       </div>
       {err && <p role="alert" className="text-danger">Auswertung konnte nicht geladen werden.</p>}
+      {!stats && !err && <p className="text-sm text-neutral-600 dark:text-neutral-400">Lädt …</p>}
       {stats && (<>
         <h2 className="mb-2 font-semibold">Ø Teilnehmer pro Woche</h2>
         <div className="mb-6"><WeeklyLine weeks={stats.weeks} /></div>

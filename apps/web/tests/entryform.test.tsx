@@ -14,6 +14,14 @@ const trials = [{ id: 1, name: "David", status: "offen", first_date: "2026-11-01
 describe("EntryForm", () => {
   beforeEach(() => { put.mockReset(); put.mockResolvedValue({ response: { ok: true } } as never); });
 
+  it("caps the trial count at 30 and pluralises the visit hint", () => {
+    const one = { ...trials[0], id: 2, name: "Eva", visits: 1 };
+    render(<EntryForm day={MON} existing={undefined} trials={[...trials, one] as never} onSaved={() => {}} />);
+    expect(screen.getByText(/Eva \(1 Besuch\)/, { selector: "option" })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Davon Probetraining"), { target: { value: "99999" } });
+    expect(screen.getAllByLabelText(/^Name Probetraining/)).toHaveLength(30);
+  });
+
   it("sundayTotal adds the groups", () => expect(sundayTotal(3, 1, 2)).toBe(6));
 
   it("shows one name input per trial and removes trailing ones", async () => {

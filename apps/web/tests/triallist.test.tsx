@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -45,6 +45,22 @@ describe("TrialList", () => {
     await userEvent.click(screen.getByRole("button", { name: "Rückgängig" }));
     expect(patch).toHaveBeenLastCalledWith("/api/trials/{trial_id}", { params: { path: { trial_id: 1 } }, body: { status: "offen" } });
     expect(await screen.findByRole("button", { name: "Mitglied geworden" })).toBeInTheDocument();
+  });
+
+  it("pluralises visits", () => {
+    render(<Host initial={[t(1, "Anna", { visits: 1 }), t(2, "Ben", { visits: 2 })]} />);
+    const items = screen.getAllByRole("listitem");
+    expect(items[0]).toHaveTextContent("1 Besuch ·");
+    expect(items[0]).not.toHaveTextContent("1 Besuche");
+    expect(items[1]).toHaveTextContent("2 Besuche");
+  });
+
+  it("changes Mitglied seit via date input", async () => {
+    patch.mockResolvedValueOnce({ data: t(1, "Anna", { status: "mitglied", member_since: "2026-11-02" }) } as never);
+    render(<Host initial={[t(1, "Anna", { status: "mitglied", member_since: "2026-11-10" })]} />);
+    fireEvent.change(screen.getByLabelText("Mitglied seit"), { target: { value: "2026-11-02" } });
+    await waitFor(() => expect(patch).toHaveBeenCalledWith("/api/trials/{trial_id}", { params: { path: { trial_id: 1 } }, body: { status: "mitglied", member_since: "2026-11-02" } }));
+    expect(await screen.findByText("Mitglied seit 02.11.")).toBeInTheDocument();
   });
 
   it("shows zahlt pro Besuch label", () => {
