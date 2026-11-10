@@ -1,4 +1,5 @@
 import { createApp } from "./app";
+import { runSync } from "./calsync";
 import type { Bindings } from "./types";
 
 const app = createApp();
@@ -11,7 +12,7 @@ export default {
     }
     return env.ASSETS.fetch(req);
   },
-  async scheduled(_event: ScheduledController, _env: Bindings, _ctx: ExecutionContext): Promise<void> {
-    // filled by the calendar sync task
+  async scheduled(_event: ScheduledController, env: Bindings, _ctx: ExecutionContext): Promise<void> {
+    await runSync(env); // never throws
   },
 };

@@ -1,15 +1,21 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { auth } from "./auth";
+import { onVacationChange } from "./calsync";
 import { HttpError } from "./errors";
+import { hooks } from "./hooks";
 import { attendance } from "./routers/attendance";
 import { coverage } from "./routers/coverage";
 import { me } from "./routers/me";
 import { presets } from "./routers/presets";
 import { slots } from "./routers/slots";
+import { syncStatus } from "./routers/syncStatus";
+import { today } from "./routers/today";
 import { trials } from "./routers/trials";
 import { users } from "./routers/users";
 import { vacations } from "./routers/vacations";
 import type { AppEnv } from "./types";
+
+hooks.onVacationChange = onVacationChange;
 
 export function createApp(): OpenAPIHono<AppEnv> {
   const app = new OpenAPIHono<AppEnv>({
@@ -38,6 +44,8 @@ export function createApp(): OpenAPIHono<AppEnv> {
   app.route("/api", coverage);
   app.route("/api", attendance);
   app.route("/api", trials);
+  app.route("/api", today);
+  app.route("/api", syncStatus);
 
   app.notFound((c) => c.json({ detail: "Nicht gefunden." }, 404));
   app.onError((err, c) => {
