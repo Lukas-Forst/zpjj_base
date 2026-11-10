@@ -2,7 +2,7 @@ from datetime import date, datetime, time
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from app.models import Role, SlotKind, TimerMode
+from app.models import Role, SlotKind, TimerMode, TrialStatus
 
 
 class MeOut(BaseModel):
@@ -274,3 +274,20 @@ class AttendanceOverview(BaseModel):
 
 class MissingOut(BaseModel):
     date: date | None
+
+
+class TrialOut(BaseModel):
+    id: int
+    name: str
+    status: str
+    first_date: date
+    member_since: date | None
+    visits: int
+    last_visit: date | None
+    due: bool
+    recent: bool
+
+
+class TrialPatch(BaseModel):
+    status: TrialStatus
+    member_since: date | None = None

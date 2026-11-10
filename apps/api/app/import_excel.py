@@ -5,7 +5,7 @@ from openpyxl import load_workbook
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import Attendance, Trial, TrialAttendance
+from app.models import Attendance, Trial, TrialAttendance, TrialStatus
 
 
 def _d(v) -> date | None:
@@ -19,6 +19,7 @@ def import_workbook(db: Session, path: Path) -> dict[str, int]:
     new_days: set[date] = set()
     seen: dict[str, tuple[str, date]] = {}  # name_key -> (name, earliest date)
     links: set[tuple[str, date]] = set()
+    members: dict[str, date | None] = {}  # name_key -> Anmeldedatum
 
     def see(name: str, d: date, link: bool) -> None:
         name = name.strip()
@@ -49,9 +50,14 @@ def import_workbook(db: Session, path: Path) -> dict[str, int]:
         for n in str(names or "").split(","):
             see(n, d, True)
     for r in wb["Probetrainings"].iter_rows(min_row=2, values_only=True):
+        r = (list(r) + [None] * 8)[:8]
         for v in r[1:3]:
             if r[0] and _d(v):
                 see(str(r[0]), _d(v), True)
+        if str(r[0] or "").strip() and (
+                str(r[7] or "").strip().casefold() == "mitglied geworden"
+                or str(r[3] or "").strip().casefold() == "ja"):
+            members[str(r[0]).strip().casefold()] = _d(r[4])
     db.flush()
     trials = 0
     ids: dict[str, int] = {}
@@ -63,7 +69,10 @@ def import_workbook(db: Session, path: Path) -> dict[str, int]:
             trials += 1
         else:
             t.first_date = min(t.first_date, first)
-        db.flush()
+        db.flush()  # applies the column default, so status is set below
+        if k in members and t.status == TrialStatus.offen:
+            t.status = TrialStatus.mitglied
+            t.member_since = members[k] or t.first_date
         ids[k] = t.id
     for k, d in links:
         if d in new_days and db.get(TrialAttendance, (ids[k], d)) is None:

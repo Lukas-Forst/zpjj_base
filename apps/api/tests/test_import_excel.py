@@ -4,7 +4,7 @@ from openpyxl import Workbook
 from sqlalchemy import func, select
 
 from app.import_excel import import_workbook
-from app.models import Attendance, Trial, TrialAttendance
+from app.models import Attendance, Trial, TrialAttendance, TrialStatus
 
 
 def _wb(path):
@@ -46,3 +46,34 @@ def test_existing_day_untouched(app, tmp_path):
         assert import_workbook(db, p)["days"] == 1
         assert db.get(Attendance, d).total == 99
         assert db.scalar(select(func.count()).select_from(TrialAttendance)) == 0
+
+
+def test_import_maps_member_status(app, tmp_path):
+    from openpyxl import load_workbook
+    p = tmp_path / "x.xlsx"
+    _wb(p)
+    wb = load_workbook(p)
+    pt = wb["Probetrainings"]
+    pt.delete_rows(1, 10)
+    pt.append(["Name", "Erstes", "Zweites", "Angemeldet?", "Anmeldedatum", "Q", "T", "Status"])
+    pt.append(["Ana", datetime(2025, 1, 7), None, None, datetime(2025, 2, 1), None, None,
+               "Mitglied geworden"])
+    pt.append(["Ben", datetime(2025, 1, 8), None, "Ja", None])
+    pt.append(["Cem", datetime(2025, 1, 9), None, "Nein", None, None, None, "Offen"])
+    wb.save(p)
+    with app.state.session_factory() as db:
+        import_workbook(db, p)
+        t = {x.name: x for x in db.scalars(select(Trial))}
+        assert t["Ana"].status == TrialStatus.mitglied
+        assert t["Ana"].member_since.isoformat() == "2025-02-01"
+        assert t["Ben"].status == TrialStatus.mitglied
+        assert t["Ben"].member_since.isoformat() == "2025-01-08"
+        assert t["Cem"].status == TrialStatus.offen and t["Cem"].member_since is None
+        import_workbook(db, p)  # idempotent
+        assert {x.name: x.status for x in db.scalars(select(Trial))} == {
+            k: v.status for k, v in t.items()}
+        t["Cem"].status = TrialStatus.zahlt_pro_besuch
+        db.commit()
+        import_workbook(db, p)
+        assert db.scalar(select(Trial.status).where(Trial.name == "Cem")) == \
+            TrialStatus.zahlt_pro_besuch
