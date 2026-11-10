@@ -21,6 +21,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Overview */
+        get: operations["overview_api_attendance_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/attendance/missing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Missing */
+        get: operations["missing_api_attendance_missing_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/attendance/parse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Parse */
+        post: operations["parse_api_attendance_parse_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/attendance/{day}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Put Day */
+        put: operations["put_day_api_attendance__day__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/me": {
         parameters: {
             query?: never;
@@ -270,6 +338,81 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AttendanceIn */
+        AttendanceIn: {
+            /** Text */
+            text?: string | null;
+            /**
+             * Cancelled
+             * @default false
+             */
+            cancelled: boolean;
+        };
+        /** AttendanceOut */
+        AttendanceOut: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Cancelled */
+            cancelled: boolean;
+            /** Total */
+            total: number | null;
+            /** Trials */
+            trials: number;
+            /** Members */
+            members: number | null;
+            /** Open Mat */
+            open_mat: number | null;
+            /** Beginner */
+            beginner: number | null;
+            /** Names */
+            names: string[];
+            /** Updated By Name */
+            updated_by_name: string | null;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** AttendanceOverview */
+        AttendanceOverview: {
+            /** Entries */
+            entries: components["schemas"]["AttendanceOut"][];
+            /** Avg 14D */
+            avg_14d: number | null;
+            /** Avg By Weekday */
+            avg_by_weekday: components["schemas"]["WeekdayAvg"][];
+        };
+        /** AttendanceParseIn */
+        AttendanceParseIn: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Text */
+            text: string;
+        };
+        /** AttendanceParseOut */
+        AttendanceParseOut: {
+            /** Total */
+            total: number;
+            /** Trials */
+            trials: number;
+            /** Members */
+            members: number;
+            /** Open Mat */
+            open_mat: number | null;
+            /** Beginner */
+            beginner: number | null;
+            /** Names */
+            names: string[];
+            /** Warnings */
+            warnings: string[];
+        };
         /** DayOut */
         DayOut: {
             /** Weekday */
@@ -313,6 +456,11 @@ export interface components {
             role: components["schemas"]["Role"];
             /** Is Trainer */
             is_trainer: boolean;
+        };
+        /** MissingOut */
+        MissingOut: {
+            /** Date */
+            date: string | null;
         };
         /** PresetCreate */
         PresetCreate: {
@@ -590,6 +738,13 @@ export interface components {
             /** Context */
             ctx?: Record<string, never>;
         };
+        /** WeekdayAvg */
+        WeekdayAvg: {
+            /** Weekday */
+            weekday: number;
+            /** Avg */
+            avg: number | null;
+        };
     };
     responses: never;
     parameters: never;
@@ -615,6 +770,125 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+        };
+    };
+    overview_api_attendance_get: {
+        parameters: {
+            query?: {
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceOverview"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    missing_api_attendance_missing_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MissingOut"];
+                };
+            };
+        };
+    };
+    parse_api_attendance_parse_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttendanceParseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceParseOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_day_api_attendance__day__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                day: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttendanceIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

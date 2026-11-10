@@ -18,15 +18,11 @@ export function visibleTiles(role: Role, env: TileEnv): Tile[] {
   const ext = (id: string, title: string, sub: string, icon: string, url?: string): Tile => ({
     id, title, sub, icon, state: "external", href: url || undefined, disabled: !url,
   });
-  const soon = (id: string, title: string, sub: string, icon: string): Tile => ({
-    id, title, sub, icon, state: "soon", disabled: true,
-  });
   const tiles: Tile[] = [
     { id: "timer", title: "Gym-Timer", sub: "Runden, Countdown, Stoppuhr", icon: "⏱", state: "active", href: "/timer/", disabled: false },
     { id: "stundenplan", title: "Stundenplan", sub: "Wochenplan mit Trainern", icon: "📅", state: "active", href: "/stundenplan/", disabled: false },
-    soon("heute", "Heute", "Nächste Einheit", "☀"),
     { id: "urlaub", title: "Urlaub", sub: "Abwesenheiten und Besetzung", icon: "🏖", state: "active", href: "/urlaub/", disabled: false },
-    soon("anwesenheit", "Anwesenheit", "Zahlen pro Einheit", "👥"),
+    { id: "anwesenheit", title: "Anwesenheit", sub: "Zahlen pro Einheit", icon: "👥", state: "active", href: "/anwesenheit/", disabled: false },
     ext("planer", "Produktionsplaner", "Merch und Produktion", "🏭", env.plannerUrl),
     ext("crm", "CRM", "Kontakte und Probetrainings", "🗂", env.crmUrl),
   ];

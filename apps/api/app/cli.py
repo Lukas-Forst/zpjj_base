@@ -1,4 +1,4 @@
-"""CLI: python -m app.cli {seed-schedule,seed-presets,export}"""
+"""CLI: python -m app.cli {seed-schedule,seed-presets,import-excel,export}"""
 import argparse
 import json
 import sys
@@ -91,6 +91,7 @@ def main(argv=None) -> None:
     s.add_argument("--users-file", type=Path, default=SEED_DIR / "users.local.yaml")
     sub.add_parser("seed-presets")
     sub.add_parser("export")
+    sub.add_parser("import-excel").add_argument("path", type=Path)
     a = ap.parse_args(argv)
     engine = make_engine(Settings.from_env().database_url)
     if a.cmd == "export":
@@ -99,6 +100,9 @@ def main(argv=None) -> None:
         with make_session_factory(engine)() as db:
             if a.cmd == "seed-presets":
                 seed_presets(db)
+            elif a.cmd == "import-excel":
+                from app.import_excel import import_workbook
+                print(import_workbook(db, a.path))
             else:
                 seed_schedule(db, a.users_file)
 

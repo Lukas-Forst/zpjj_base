@@ -236,3 +236,51 @@ class SyncOut(BaseModel):
     error_since: datetime | None
     last_ok_at: datetime | None
     unmatched: list[str]
+
+
+class AttendanceParseIn(BaseModel):
+    date: date
+    text: str = Field(max_length=500)
+
+
+class AttendanceParseOut(BaseModel):
+    total: int
+    trials: int
+    members: int
+    open_mat: int | None
+    beginner: int | None
+    names: list[str]
+    warnings: list[str]
+
+
+class AttendanceIn(BaseModel):
+    text: str | None = Field(default=None, max_length=500)
+    cancelled: bool = False
+
+
+class AttendanceOut(BaseModel):
+    date: date
+    cancelled: bool
+    total: int | None
+    trials: int
+    members: int | None
+    open_mat: int | None
+    beginner: int | None
+    names: list[str]
+    updated_by_name: str | None
+    updated_at: datetime
+
+
+class WeekdayAvg(BaseModel):
+    weekday: int
+    avg: float | None
+
+
+class AttendanceOverview(BaseModel):
+    entries: list[AttendanceOut]
+    avg_14d: float | None
+    avg_by_weekday: list[WeekdayAvg]
+
+
+class MissingOut(BaseModel):
+    date: date | None

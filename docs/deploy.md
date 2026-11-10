@@ -71,3 +71,13 @@ Verhalten: Von der Base angelegte Termine werden bei Löschung oder Änderung vo
 ## Lokal testen
 
 `apps/dev.sh` baut die Oberfläche, legt `apps/api/dev.db` an, seedet den Stundenplan (mit den Platzhalter-Nutzern aus `users.example.yaml`, falls `users.local.yaml` fehlt) und startet API (:8000) und Oberfläche (:3000), eingeloggt als `lukas@example.invalid` (änderbar mit `AUTH_DEV_EMAIL=…`). Trello-Werte liest das Skript aus `api_key.md` (`TRELLO_KEY=`, `TRELLO_TOKEN=`). Nach Frontend-Änderungen das Skript neu starten.
+
+## Anwesenheit: Excel-Import (einmalig)
+
+Die alte Excel-Historie wird einmal importiert (vorhandene Tage bleiben unberührt, mehrfaches Ausführen ist unschädlich):
+
+1. Datei hochladen: `fly ssh sftp shell -a zpjj-base-api`, dort `put ZeroPressure_Retention.xlsm /tmp/ZeroPressure_Retention.xlsm`.
+2. Import starten: `fly ssh console -a zpjj-base-api -C "python -m app.cli import-excel /tmp/ZeroPressure_Retention.xlsm"` (gibt Zähler `days`, `skipped`, `trials` aus).
+3. Datei danach löschen: `fly ssh console -a zpjj-base-api -C "rm /tmp/ZeroPressure_Retention.xlsm"`.
+
+Die Excel-Datei enthält echte Namen und gehört nie ins Repo.

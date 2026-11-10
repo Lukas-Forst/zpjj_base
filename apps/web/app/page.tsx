@@ -1,6 +1,7 @@
 "use client";
 import { AppShell, roleLabel, useCurrentMe } from "@/components/AppShell";
 import { CoverageBanner } from "@/components/CoverageBanner";
+import { MissingNumbers } from "@/components/MissingNumbers";
 import { TodayStrip } from "@/components/TodayStrip";
 import { TileGrid } from "@/components/TileGrid";
 
@@ -16,6 +17,7 @@ function Home() {
       <h1 className="text-xl font-semibold">Hallo {me.display_name}</h1>
       <p className="mb-4 text-sm text-neutral-600">{roleLabel(me)}</p>
       <CoverageBanner />
+      <MissingNumbers />
       <TodayStrip />
       <TileGrid role={me.role} env={env} />
     </main>

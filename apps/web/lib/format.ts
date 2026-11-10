@@ -8,3 +8,6 @@ export function errText(error: unknown, fallback: string): string {
   return typeof d === "string" ? d : fallback;
 }
 export const deDate = (iso: string) => new Date(iso + "T00:00").toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" });
+
+/** ISO weekday 1..7 (Mo..So) of a YYYY-MM-DD string, timezone-independent. */
+export const isoWeekday = (iso: string) => new Date(iso + "T00:00Z").getUTCDay() || 7;
