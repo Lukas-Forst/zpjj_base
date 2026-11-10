@@ -85,6 +85,7 @@ export async function verifyAccessJwt(
     );
     if (!ok) throw new Error("signature");
     if (typeof claims.exp !== "number" || claims.exp <= t) throw new Error("exp");
+    if (claims.nbf !== undefined && (typeof claims.nbf !== "number" || claims.nbf > t)) throw new Error("nbf");
     if (claims.iss !== `https://${st.cfAccessTeamDomain}`) throw new Error("iss");
     const aud = claims.aud;
     if (!(Array.isArray(aud) ? aud.includes(st.cfAccessAud) : aud === st.cfAccessAud)) throw new Error("aud");

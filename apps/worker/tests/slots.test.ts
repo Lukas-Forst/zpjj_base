@@ -107,6 +107,9 @@ it("set trainers (test_set_trainers)", async () => {
   expect(((await get("/api/slots"))[0]).trainers).toHaveLength(1);
   expect(((await (await put([])).json()) as any).trainers).toEqual([]);
   expect((await put([9999])).status).toBe(422);
+  const many = await put(Array.from({ length: 51 }, (_, i) => i + 1));
+  expect(many.status).toBe(422);
+  expect(await many.json()).toEqual({ detail: "Zu viele Trainer." });
   expect((await call("/api/slots/9999/trainers", { as: A, method: "PUT", json: { user_ids: [] } })).status).toBe(404);
 });
 

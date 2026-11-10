@@ -43,7 +43,7 @@ const SlotPatch = z
     location: z.string().nullish(), // "" = back to the home gym
   })
   .openapi("SlotPatch");
-const TrainerIds = z.object({ user_ids: z.array(z.number().int()) }).openapi("TrainerIds");
+const TrainerIds = z.object({ user_ids: z.array(z.number().int()).max(50, "Zu viele Trainer.") }).openapi("TrainerIds");
 
 const loc = (v: string | null | undefined) => (v ?? "").trim().slice(0, 50) || null;
 const out = (s: SlotRow) => ({ ...s, trainers: s.trainers.map(({ id, display_name }) => ({ id, display_name })) });

@@ -18,7 +18,7 @@ const b64u = (b: ArrayBuffer | string) => {
 const makeKey = () =>
   crypto.subtle.generateKey({ name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" }, true, ["sign", "verify"]) as Promise<CryptoKeyPair>;
 
-async function mint(key: CryptoKeyPair, o: { email?: string; kid?: string; aud?: string; iss?: string; exp_in?: number } = {}) {
+async function mint(key: CryptoKeyPair, o: { email?: string; kid?: string; aud?: string; iss?: string; exp_in?: number; nbf?: unknown } = {}) {
   const head = b64u(JSON.stringify({ alg: "RS256", typ: "JWT", kid: o.kid ?? "k1" }));
   const body = b64u(
     JSON.stringify({
@@ -26,6 +26,7 @@ async function mint(key: CryptoKeyPair, o: { email?: string; kid?: string; aud?:
       aud: [o.aud ?? AUD],
       iss: o.iss ?? `https://${TEAM}`,
       exp: Math.floor(Date.now() / 1000) + (o.exp_in ?? 300),
+      ...(o.nbf !== undefined ? { nbf: o.nbf } : {}),
     }),
   );
   const sig = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key.privateKey, new TextEncoder().encode(`${head}.${body}`));
@@ -90,6 +91,14 @@ describe("JWT", () => {
   it("test_email_case_insensitive", async () => {
     await addUser({ email: "a@example.com" });
     expect((await getMe(await mint(key, { email: "A@Example.com" }))).status).toBe(200);
+  });
+
+  it("nbf: future and non-numeric rejected, past accepted", async () => {
+    await addUser({ email: "a@example.com" });
+    const now = Math.floor(Date.now() / 1000);
+    expect((await getMe(await mint(key, { nbf: now + 600 }))).status).toBe(401);
+    expect((await getMe(await mint(key, { nbf: "soon" }))).status).toBe(401);
+    expect((await getMe(await mint(key, { nbf: now - 60 }))).status).toBe(200);
   });
 
   it("verifyAccessJwt returns the lowercased email and honours injected clock", async () => {

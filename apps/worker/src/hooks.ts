@@ -6,9 +6,13 @@ export const hooks: { onVacationChange?: (c: Context<AppEnv>) => Promise<void> }
 
 /** Fire-and-forget after a saved vacation change; a failing hook never fails the request. */
 export function vacationChanged(c: Context<AppEnv>): void {
-  c.executionCtx.waitUntil(
-    Promise.resolve()
-      .then(() => hooks.onVacationChange?.(c))
-      .catch((e) => console.error("calendar sync trigger failed", e)),
-  );
+  try {
+    c.executionCtx.waitUntil(
+      Promise.resolve()
+        .then(() => hooks.onVacationChange?.(c))
+        .catch((e) => console.error("calendar sync trigger failed", e)),
+    );
+  } catch (e) {
+    console.error("calendar sync trigger failed", e);
+  }
 }
