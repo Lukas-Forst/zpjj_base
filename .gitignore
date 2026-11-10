@@ -21,3 +21,6 @@ apps/worker/.dev.vars
 apps/worker/node_modules/
 apps/worker/seed/users.local.yaml
 apps/worker/*.sql
+
+# Windows download markers (WSL)
+*:Zone.Identifier
