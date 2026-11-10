@@ -4,91 +4,6 @@
  */
 
 export interface paths {
-    "/healthz": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Healthz */
-        get: operations["healthz_healthz_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/attendance": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Overview */
-        get: operations["overview_api_attendance_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/attendance/missing": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Missing */
-        get: operations["missing_api_attendance_missing_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/attendance/stats": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Stats */
-        get: operations["stats_api_attendance_stats_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/attendance/{day}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Put Day */
-        put: operations["put_day_api_attendance__day__put"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/me": {
         parameters: {
             query?: never;
@@ -96,61 +11,27 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Me */
-        get: operations["me_api_me_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/slots": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Aktueller Nutzer */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MeOut"];
+                    };
+                };
+            };
         };
-        /** List Slots */
-        get: operations["list_slots_api_slots_get"];
         put?: never;
-        /** Create Slot */
-        post: operations["create_slot_api_slots_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/slots/{slot_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Patch Slot */
-        patch: operations["patch_slot_api_slots__slot_id__patch"];
-        trace?: never;
-    };
-    "/api/slots/{slot_id}/trainers": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Set Trainers */
-        put: operations["set_trainers_api_slots__slot_id__trainers_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -165,11 +46,51 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Users */
-        get: operations["list_users_api_users_get"];
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Nutzer */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserOut"][];
+                    };
+                };
+            };
+        };
         put?: never;
-        /** Create User */
-        post: operations["create_user_api_users_post"];
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UserCreate"];
+                };
+            };
+            responses: {
+                /** @description Angelegt */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserOut"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -189,8 +110,174 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Patch User */
-        patch: operations["patch_user_api_users__user_id__patch"];
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    user_id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UserPatch"];
+                };
+            };
+            responses: {
+                /** @description Geändert */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserOut"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/slots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    include_inactive?: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Slots */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SlotOut"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SlotCreate"];
+                };
+            };
+            responses: {
+                /** @description Angelegt */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SlotOut"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/slots/{slot_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slot_id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SlotPatch"];
+                };
+            };
+            responses: {
+                /** @description Geändert */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SlotOut"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/slots/{slot_id}/trainers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slot_id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TrainerIds"];
+                };
+            };
+            responses: {
+                /** @description Trainer gesetzt */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SlotOut"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/timer-presets": {
@@ -200,11 +287,51 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Presets */
-        get: operations["list_presets_api_timer_presets_get"];
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Presets */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PresetOut"][];
+                    };
+                };
+            };
+        };
         put?: never;
-        /** Create Preset */
-        post: operations["create_preset_api_timer_presets_post"];
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PresetCreate"];
+                };
+            };
+            responses: {
+                /** @description Angelegt */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PresetOut"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -221,29 +348,54 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Delete Preset */
-        delete: operations["delete_preset_api_timer_presets__preset_id__delete"];
-        options?: never;
-        head?: never;
-        /** Patch Preset */
-        patch: operations["patch_preset_api_timer_presets__preset_id__patch"];
-        trace?: never;
-    };
-    "/api/today": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    preset_id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Gelöscht */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
         };
-        /** Today */
-        get: operations["today_api_today_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    preset_id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PresetPatch"];
+                };
+            };
+            responses: {
+                /** @description Geändert */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PresetOut"];
+                    };
+                };
+            };
+        };
         trace?: never;
     };
     "/api/vacations": {
@@ -253,11 +405,51 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Vacations */
-        get: operations["list_vacations_api_vacations_get"];
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Urlaub */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["VacationOut"][];
+                    };
+                };
+            };
+        };
         put?: never;
-        /** Create */
-        post: operations["create_api_vacations_post"];
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["VacationIn"];
+                };
+            };
+            responses: {
+                /** @description Angelegt */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["VacationOut"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -274,8 +466,26 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Delete */
-        delete: operations["delete_api_vacations__vacation_id__delete"];
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    vacation_id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Gelöscht */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -288,8 +498,26 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Coverage */
-        get: operations["coverage_api_coverage_get"];
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Lücken */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["GapOut"][];
+                    };
+                };
+            };
+        };
         put?: never;
         post?: never;
         delete?: never;
@@ -305,11 +533,26 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /**
-         * Plan
-         * @description This week and the next two (Mon-Sun), from today on, one card per active slot.
-         */
-        get: operations["plan_api_coverage_plan_get"];
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Dreiwochenplan */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PlanWeek"][];
+                    };
+                };
+            };
+        };
         put?: never;
         post?: never;
         delete?: never;
@@ -325,28 +568,219 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Substitutes */
-        get: operations["list_substitutes_api_coverage_substitutes_get"];
-        /** Add Substitute */
-        put: operations["add_substitute_api_coverage_substitutes_put"];
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Vertretungen */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SubstituteOut"][];
+                    };
+                };
+            };
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SubstituteIn"];
+                };
+            };
+            responses: {
+                /** @description Eingetragen */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
         post?: never;
-        /** Remove Substitute */
-        delete: operations["remove_substitute_api_coverage_substitutes_delete"];
+        delete: {
+            parameters: {
+                query: {
+                    slot_id: number;
+                    date: string;
+                    user_id: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Ausgetragen */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/sync-status": {
+    "/api/attendance": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Status */
-        get: operations["status_api_sync_status_get"];
+        get: {
+            parameters: {
+                query?: {
+                    days?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Übersicht */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AttendanceOverview"];
+                    };
+                };
+            };
+        };
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/attendance/missing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Fehlender Tag */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MissingOut"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/attendance/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    months?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Statistik */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StatsOut"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/attendance/{day}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    day: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AttendanceIn"];
+                };
+            };
+            responses: {
+                /** @description Gespeichert */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AttendanceOut"];
+                    };
+                };
+            };
+        };
         post?: never;
         delete?: never;
         options?: never;
@@ -361,8 +795,26 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Trials */
-        get: operations["list_trials_api_trials_get"];
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Personen */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TrialOut"][];
+                    };
+                };
+            };
+        };
         put?: never;
         post?: never;
         delete?: never;
@@ -384,529 +836,348 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Patch Trial */
-        patch: operations["patch_trial_api_trials__trial_id__patch"];
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    trial_id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["TrialPatch"];
+                };
+            };
+            responses: {
+                /** @description Aktualisiert */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TrialOut"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/today": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Technikplan der Woche */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TodayOut"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sync-status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Kalender-Sync */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SyncOut"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** AttendanceIn */
-        AttendanceIn: {
-            /**
-             * Cancelled
-             * @default false
-             */
-            cancelled: boolean;
-            /** Total */
-            total?: number | null;
-            /**
-             * Trial Names
-             * @default []
-             */
-            trial_names: string[];
-            /**
-             * Guests
-             * @default 0
-             */
-            guests: number;
-            /** Open Mat */
-            open_mat?: number | null;
-            /** Beginner */
-            beginner?: number | null;
-        };
-        /** AttendanceOut */
-        AttendanceOut: {
-            /**
-             * Date
-             * Format: date
-             */
-            date: string;
-            /** Cancelled */
-            cancelled: boolean;
-            /** Total */
-            total: number | null;
-            /** Trials */
-            trials: number;
-            /** Guests */
-            guests: number;
-            /** Members */
-            members: number | null;
-            /** Open Mat */
-            open_mat: number | null;
-            /** Beginner */
-            beginner: number | null;
-            /** Names */
-            names: string[];
-            /** Updated By Name */
-            updated_by_name: string | null;
-            /**
-             * Updated At
-             * Format: date-time
-             */
-            updated_at: string;
-        };
-        /** AttendanceOverview */
-        AttendanceOverview: {
-            /** Entries */
-            entries: components["schemas"]["AttendanceOut"][];
-            /** Avg 14D */
-            avg_14d: number | null;
-            /** Avg By Weekday */
-            avg_by_weekday: components["schemas"]["WeekdayAvg"][];
-        };
-        /** DayOut */
-        DayOut: {
-            /** Weekday */
-            weekday: number;
-            /** Topics */
-            topics: string[];
-        };
-        /** GapOut */
-        GapOut: {
-            /**
-             * Date
-             * Format: date
-             */
-            date: string;
-            /** Slot Id */
-            slot_id: number;
-            /** Weekday */
-            weekday: number;
-            /**
-             * Start Time
-             * Format: time
-             */
-            start_time: string;
-            kind: components["schemas"]["SlotKind"];
-            /** Level */
-            level: string;
-            /** Absent */
-            absent: string[];
-            /** Location */
-            location?: string | null;
-        };
-        /** HTTPValidationError */
-        HTTPValidationError: {
-            /** Detail */
-            detail?: components["schemas"]["ValidationError"][];
-        };
-        /** MeOut */
         MeOut: {
-            /** Id */
             id: number;
-            /** Display Name */
             display_name: string;
             role: components["schemas"]["Role"];
-            /** Is Trainer */
             is_trainer: boolean;
         };
-        /** MissingOut */
-        MissingOut: {
-            /** Date */
-            date: string | null;
-        };
-        /** PlanDay */
-        PlanDay: {
-            /**
-             * Date
-             * Format: date
-             */
-            date: string;
-            /** Weekday */
-            weekday: number;
-            /** Slots */
-            slots: components["schemas"]["PlanSlot"][];
-        };
-        /** PlanSlot */
-        PlanSlot: {
-            /** Slot Id */
-            slot_id: number;
-            /**
-             * Start Time
-             * Format: time
-             */
-            start_time: string;
-            kind: components["schemas"]["SlotKind"];
-            /** Location */
-            location?: string | null;
-            /** Status */
-            status: string;
-            /** Trainers */
-            trainers: string[];
-            /** Absent */
-            absent: string[];
-            /** Substitutes */
-            substitutes: components["schemas"]["PlanSubstitute"][];
-        };
-        /** PlanSubstitute */
-        PlanSubstitute: {
-            /** User Id */
-            user_id: number;
-            /** User Name */
-            user_name: string;
-        };
-        /** PlanWeek */
-        PlanWeek: {
-            /**
-             * Week Start
-             * Format: date
-             */
-            week_start: string;
-            /** Iso Week */
-            iso_week: number;
-            /** Unbesetzt */
-            unbesetzt: number;
-            /** Teilweise */
-            teilweise: number;
-            /** Days */
-            days: components["schemas"]["PlanDay"][];
-        };
-        /** PresetCreate */
-        PresetCreate: {
-            /** Name */
-            name: string;
-            mode: components["schemas"]["TimerMode"];
-            /** Config */
-            config: {
-                [key: string]: unknown;
-            };
-            /**
-             * Sort Order
-             * @default 0
-             */
-            sort_order: number;
-        };
-        /** PresetOut */
-        PresetOut: {
-            /** Id */
+        /** @enum {string} */
+        Role: "gesellschafter" | "trainer";
+        UserOut: {
             id: number;
-            /** Name */
+            display_name: string;
+            role: components["schemas"]["Role"];
+            is_trainer: boolean;
+            email: string;
+            active: boolean;
+        };
+        UserCreate: {
+            email: string;
+            display_name: string;
+            role?: components["schemas"]["Role"];
+            /** @default true */
+            is_trainer: boolean;
+        };
+        UserPatch: {
+            display_name?: string | null;
+            role?: components["schemas"]["Role"] | null;
+            is_trainer?: boolean | null;
+            active?: boolean | null;
+        };
+        SlotOut: {
+            id: number;
+            weekday: number;
+            start_time: string;
+            end_time: string;
+            kind: components["schemas"]["SlotKind"];
+            active: boolean;
+            sort_order: number;
+            location: string | null;
+            trainers: components["schemas"]["TrainerOut"][];
+        };
+        /** @enum {string} */
+        SlotKind: "no_gi" | "gi" | "open_mat";
+        TrainerOut: {
+            id: number;
+            display_name: string;
+        };
+        SlotCreate: {
+            weekday: number;
+            start_time: string;
+            end_time: string;
+            kind: components["schemas"]["SlotKind"];
+            /** @default 0 */
+            sort_order: number;
+            location?: string | null;
+        };
+        SlotPatch: {
+            weekday?: number | null;
+            start_time?: string | null;
+            end_time?: string | null;
+            kind?: components["schemas"]["SlotKind"] | null;
+            active?: boolean | null;
+            sort_order?: number | null;
+            location?: string | null;
+        };
+        TrainerIds: {
+            user_ids: number[];
+        };
+        PresetOut: {
+            id: number;
             name: string;
             mode: components["schemas"]["TimerMode"];
-            /** Config */
             config: {
                 [key: string]: unknown;
             };
-            /** Sort Order */
             sort_order: number;
         };
-        /** PresetPatch */
+        /** @enum {string} */
+        TimerMode: "rounds" | "countdown" | "stopwatch";
+        PresetCreate: {
+            name: string;
+            mode: components["schemas"]["TimerMode"];
+            config: {
+                [key: string]: unknown;
+            };
+            /** @default 0 */
+            sort_order: number;
+        };
         PresetPatch: {
-            /** Name */
             name?: string | null;
             mode?: components["schemas"]["TimerMode"] | null;
-            /** Config */
             config?: {
                 [key: string]: unknown;
             } | null;
-            /** Sort Order */
             sort_order?: number | null;
         };
-        /**
-         * Role
-         * @enum {string}
-         */
-        Role: "gesellschafter" | "trainer";
-        /** SlotCreate */
-        SlotCreate: {
-            /** Weekday */
-            weekday: number;
-            /**
-             * Start Time
-             * Format: time
-             */
-            start_time: string;
-            /**
-             * End Time
-             * Format: time
-             */
-            end_time: string;
-            kind: components["schemas"]["SlotKind"];
-            /**
-             * Sort Order
-             * @default 0
-             */
-            sort_order: number;
-            /** Location */
-            location?: string | null;
-        };
-        /**
-         * SlotKind
-         * @enum {string}
-         */
-        SlotKind: "no_gi" | "gi" | "open_mat";
-        /** SlotOut */
-        SlotOut: {
-            /** Id */
-            id: number;
-            /** Weekday */
-            weekday: number;
-            /**
-             * Start Time
-             * Format: time
-             */
-            start_time: string;
-            /**
-             * End Time
-             * Format: time
-             */
-            end_time: string;
-            kind: components["schemas"]["SlotKind"];
-            /** Active */
-            active: boolean;
-            /** Sort Order */
-            sort_order: number;
-            /** Location */
-            location?: string | null;
-            /** Trainers */
-            trainers: components["schemas"]["TrainerOut"][];
-        };
-        /** SlotPatch */
-        SlotPatch: {
-            /** Weekday */
-            weekday?: number | null;
-            /** Start Time */
-            start_time?: string | null;
-            /** End Time */
-            end_time?: string | null;
-            kind?: components["schemas"]["SlotKind"] | null;
-            /** Active */
-            active?: boolean | null;
-            /** Sort Order */
-            sort_order?: number | null;
-            /** Location */
-            location?: string | null;
-        };
-        /** StatsOut */
-        StatsOut: {
-            /** Months */
-            months: number;
-            /** Weeks */
-            weeks: components["schemas"]["WeekPoint"][];
-            /** Weekday Avg */
-            weekday_avg: components["schemas"]["WeekdayAvg"][];
-        };
-        /** SubstituteIn */
-        SubstituteIn: {
-            /** Slot Id */
-            slot_id: number;
-            /**
-             * Date
-             * Format: date
-             */
-            date: string;
-            /** User Id */
-            user_id?: number | null;
-        };
-        /** SubstituteOut */
-        SubstituteOut: {
-            /** Slot Id */
-            slot_id: number;
-            /**
-             * Date
-             * Format: date
-             */
-            date: string;
-            /** User Id */
-            user_id: number;
-            /** User Name */
-            user_name: string;
-            /** Weekday */
-            weekday: number;
-            /**
-             * Start Time
-             * Format: time
-             */
-            start_time: string;
-            kind: components["schemas"]["SlotKind"];
-        };
-        /** SyncOut */
-        SyncOut: {
-            /** Enabled */
-            enabled: boolean;
-            /** Ok */
-            ok: boolean;
-            /** Error Since */
-            error_since: string | null;
-            /** Last Ok At */
-            last_ok_at: string | null;
-            /** Unmatched */
-            unmatched: string[];
-        };
-        /**
-         * TimerMode
-         * @enum {string}
-         */
-        TimerMode: "rounds" | "countdown" | "stopwatch";
-        /** TodayOut */
-        TodayOut: {
-            /** Status */
-            status: string;
-            /** Week */
-            week: number;
-            /** Weekday */
-            weekday: number;
-            /** Days */
-            days: components["schemas"]["DayOut"][];
-            /** Next Week */
-            next_week: string | null;
-            /** Month Theme */
-            month_theme?: string | null;
-        };
-        /** TrainerIds */
-        TrainerIds: {
-            /** User Ids */
-            user_ids: number[];
-        };
-        /** TrainerOut */
-        TrainerOut: {
-            /** Id */
-            id: number;
-            /** Display Name */
-            display_name: string;
-        };
-        /** TrialOut */
-        TrialOut: {
-            /** Id */
-            id: number;
-            /** Name */
-            name: string;
-            /** Status */
-            status: string;
-            /**
-             * First Date
-             * Format: date
-             */
-            first_date: string;
-            /** Member Since */
-            member_since: string | null;
-            /** Visits */
-            visits: number;
-            /** Last Visit */
-            last_visit: string | null;
-            /** Due */
-            due: boolean;
-            /** Recent */
-            recent: boolean;
-        };
-        /** TrialPatch */
-        TrialPatch: {
-            status: components["schemas"]["TrialStatus"];
-            /** Member Since */
-            member_since?: string | null;
-        };
-        /**
-         * TrialStatus
-         * @enum {string}
-         */
-        TrialStatus: "offen" | "mitglied" | "zahlt_pro_besuch";
-        /** UserCreate */
-        UserCreate: {
-            /** Email */
-            email: string;
-            /** Display Name */
-            display_name: string;
-            /** @default trainer */
-            role: components["schemas"]["Role"];
-            /**
-             * Is Trainer
-             * @default true
-             */
-            is_trainer: boolean;
-        };
-        /** UserOut */
-        UserOut: {
-            /** Id */
-            id: number;
-            /** Display Name */
-            display_name: string;
-            role: components["schemas"]["Role"];
-            /** Is Trainer */
-            is_trainer: boolean;
-            /** Email */
-            email: string;
-            /** Active */
-            active: boolean;
-        };
-        /** UserPatch */
-        UserPatch: {
-            /** Display Name */
-            display_name?: string | null;
-            role?: components["schemas"]["Role"] | null;
-            /** Is Trainer */
-            is_trainer?: boolean | null;
-            /** Active */
-            active?: boolean | null;
-        };
-        /** VacationIn */
-        VacationIn: {
-            /** User Id */
-            user_id?: number | null;
-            /**
-             * Start Date
-             * Format: date
-             */
-            start_date: string;
-            /**
-             * End Date
-             * Format: date
-             */
-            end_date: string;
-        };
-        /** VacationOut */
         VacationOut: {
-            /** Id */
             id: number;
-            /** User Id */
             user_id: number;
-            /** User Name */
             user_name: string;
-            /**
-             * Start Date
-             * Format: date
-             */
             start_date: string;
-            /**
-             * End Date
-             * Format: date
-             */
             end_date: string;
-            /** Source */
             source: string;
         };
-        /** ValidationError */
-        ValidationError: {
-            /** Location */
-            loc: (string | number)[];
-            /** Message */
-            msg: string;
-            /** Error Type */
-            type: string;
-            /** Input */
-            input?: unknown;
-            /** Context */
-            ctx?: Record<string, never>;
+        VacationIn: {
+            user_id?: number | null;
+            start_date: string;
+            end_date: string;
         };
-        /** WeekPoint */
-        WeekPoint: {
-            /**
-             * Week Start
-             * Format: date
-             */
+        GapOut: {
+            date: string;
+            slot_id: number;
+            weekday: number;
+            start_time: string;
+            kind: components["schemas"]["SlotKind"];
+            level: string;
+            absent: string[];
+            location: string | null;
+        };
+        PlanWeek: {
             week_start: string;
-            /** Avg */
+            iso_week: number;
+            unbesetzt: number;
+            teilweise: number;
+            days: components["schemas"]["PlanDay"][];
+        };
+        PlanDay: {
+            date: string;
+            weekday: number;
+            slots: components["schemas"]["PlanSlot"][];
+        };
+        PlanSlot: {
+            slot_id: number;
+            start_time: string;
+            kind: components["schemas"]["SlotKind"];
+            location: string | null;
+            status: string;
+            trainers: string[];
+            absent: string[];
+            substitutes: components["schemas"]["PlanSubstitute"][];
+        };
+        PlanSubstitute: {
+            user_id: number;
+            user_name: string;
+        };
+        SubstituteOut: {
+            slot_id: number;
+            date: string;
+            user_id: number;
+            user_name: string;
+            weekday: number;
+            start_time: string;
+            kind: components["schemas"]["SlotKind"];
+        };
+        SubstituteIn: {
+            slot_id: number;
+            date: string;
+            user_id?: number | null;
+        };
+        AttendanceOverview: {
+            entries: components["schemas"]["AttendanceOut"][];
+            avg_14d: number | null;
+            avg_by_weekday: components["schemas"]["WeekdayAvg"][];
+        };
+        AttendanceOut: {
+            date: string;
+            cancelled: boolean;
+            total: number | null;
+            trials: number;
+            guests: number;
+            members: number | null;
+            open_mat: number | null;
+            beginner: number | null;
+            names: string[];
+            updated_by_name: string | null;
+            updated_at: string;
+        };
+        WeekdayAvg: {
+            weekday: number;
             avg: number | null;
-            /** Days */
+        };
+        MissingOut: {
+            date: string | null;
+        };
+        StatsOut: {
+            months: number;
+            weeks: components["schemas"]["WeekPoint"][];
+            weekday_avg: components["schemas"]["WeekdayAvg"][];
+        };
+        WeekPoint: {
+            week_start: string;
+            avg: number | null;
             days: number;
         };
-        /** WeekdayAvg */
-        WeekdayAvg: {
-            /** Weekday */
+        AttendanceIn: {
+            /** @default false */
+            cancelled: boolean;
+            total?: number | null;
+            /** @default [] */
+            trial_names: string[];
+            /** @default 0 */
+            guests: number;
+            open_mat?: number | null;
+            beginner?: number | null;
+        };
+        TrialOut: {
+            id: number;
+            name: string;
+            status: string;
+            first_date: string;
+            member_since: string | null;
+            visits: number;
+            last_visit: string | null;
+            due: boolean;
+            recent: boolean;
+        };
+        TrialPatch: {
+            status: components["schemas"]["TrialStatus"];
+            member_since?: string | null;
+        };
+        /** @enum {string} */
+        TrialStatus: "offen" | "mitglied" | "zahlt_pro_besuch";
+        TodayOut: {
+            status: string;
+            week: number;
             weekday: number;
-            /** Avg */
-            avg: number | null;
+            days: components["schemas"]["DayOut"][];
+            next_week: string | null;
+            /** @default null */
+            month_theme: string | null;
+        };
+        DayOut: {
+            weekday: number;
+            topics: string[];
+        };
+        SyncOut: {
+            enabled: boolean;
+            ok: boolean;
+            error_since: string | null;
+            last_ok_at: string | null;
+            unmatched: string[];
         };
     };
     responses: never;
@@ -916,800 +1187,4 @@ export interface components {
     pathItems: never;
 }
 export type $defs = Record<string, never>;
-export interface operations {
-    healthz_healthz_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-        };
-    };
-    overview_api_attendance_get: {
-        parameters: {
-            query?: {
-                days?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AttendanceOverview"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    missing_api_attendance_missing_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MissingOut"];
-                };
-            };
-        };
-    };
-    stats_api_attendance_stats_get: {
-        parameters: {
-            query?: {
-                months?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StatsOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    put_day_api_attendance__day__put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                day: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AttendanceIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AttendanceOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    me_api_me_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MeOut"];
-                };
-            };
-        };
-    };
-    list_slots_api_slots_get: {
-        parameters: {
-            query?: {
-                include_inactive?: boolean;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SlotOut"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_slot_api_slots_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SlotCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SlotOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    patch_slot_api_slots__slot_id__patch: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                slot_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SlotPatch"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SlotOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    set_trainers_api_slots__slot_id__trainers_put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                slot_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TrainerIds"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SlotOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_users_api_users_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UserOut"][];
-                };
-            };
-        };
-    };
-    create_user_api_users_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UserCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UserOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    patch_user_api_users__user_id__patch: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                user_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UserPatch"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UserOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_presets_api_timer_presets_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PresetOut"][];
-                };
-            };
-        };
-    };
-    create_preset_api_timer_presets_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PresetCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PresetOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    delete_preset_api_timer_presets__preset_id__delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                preset_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    patch_preset_api_timer_presets__preset_id__patch: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                preset_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PresetPatch"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PresetOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    today_api_today_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TodayOut"];
-                };
-            };
-        };
-    };
-    list_vacations_api_vacations_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VacationOut"][];
-                };
-            };
-        };
-    };
-    create_api_vacations_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["VacationIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VacationOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    delete_api_vacations__vacation_id__delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                vacation_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    coverage_api_coverage_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GapOut"][];
-                };
-            };
-        };
-    };
-    plan_api_coverage_plan_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PlanWeek"][];
-                };
-            };
-        };
-    };
-    list_substitutes_api_coverage_substitutes_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SubstituteOut"][];
-                };
-            };
-        };
-    };
-    add_substitute_api_coverage_substitutes_put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SubstituteIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    remove_substitute_api_coverage_substitutes_delete: {
-        parameters: {
-            query: {
-                slot_id: number;
-                date: string;
-                user_id: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    status_api_sync_status_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncOut"];
-                };
-            };
-        };
-    };
-    list_trials_api_trials_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TrialOut"][];
-                };
-            };
-        };
-    };
-    patch_trial_api_trials__trial_id__patch: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                trial_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TrialPatch"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TrialOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-}
+export type operations = Record<string, never>;

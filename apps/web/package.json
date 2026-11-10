@@ -8,7 +8,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "gen:api": "cd ../api && uv run python -c \"import json;from app.main import create_app;from app.config import Settings;print(json.dumps(create_app(Settings(env='dev',database_url='sqlite://')).openapi()))\" > ../web/lib/api/openapi.json && cd ../web && openapi-typescript lib/api/openapi.json -o lib/api/schema.d.ts"
+    "gen:api": "cd ../worker && npm run -s openapi > ../web/lib/api/openapi.json && cd ../web && openapi-typescript lib/api/openapi.json -o lib/api/schema.d.ts"
   },
   "dependencies": {
     "@heroui/react": "^3.2.7",

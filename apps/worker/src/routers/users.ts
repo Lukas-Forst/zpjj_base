@@ -2,11 +2,19 @@ import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { requireGesellschafter } from "../auth";
 import { all, first, run, stmt } from "../db";
 import { HttpError } from "../errors";
-import { NameIn, now, Role } from "../schemas/common";
+import { IdParam, NameIn, now, Role } from "../schemas/common";
 import type { AppEnv } from "../types";
-import { MeOut } from "./me";
 
-export const UserOut = MeOut.extend({ email: z.string(), active: z.boolean() }).openapi("UserOut");
+export const UserOut = z
+  .object({
+    id: z.number().int(),
+    display_name: z.string(),
+    role: Role,
+    is_trainer: z.boolean(),
+    email: z.string(),
+    active: z.boolean(),
+  })
+  .openapi("UserOut");
 
 const emailOk = (v: string) => {
   v = v.trim().toLowerCase();
@@ -23,7 +31,7 @@ const UserCreate = z
 const UserPatch = z
   .object({
     display_name: NameIn.nullish(),
-    role: Role.nullish(),
+    role: Role.or(z.null()).optional(),
     is_trainer: z.boolean().nullish(),
     active: z.boolean().nullish(),
   })
@@ -72,7 +80,7 @@ export const users = new OpenAPIHono<AppEnv>()
       method: "patch",
       path: "/users/{user_id}",
       ...guard,
-      request: { params: z.object({ user_id: z.coerce.number().int() }), body: { content: json(UserPatch), required: true } },
+      request: { params: z.object({ user_id: IdParam }), body: { content: json(UserPatch), required: true } },
       responses: { 200: { description: "Geändert", content: json(UserOut) } },
     }),
     async (c) => {

@@ -56,3 +56,7 @@ export function createApp(): OpenAPIHono<AppEnv> {
 
   return app;
 }
+
+export function buildOpenApi() {
+  return createApp().getOpenAPI31Document({ openapi: "3.1.0", info: { title: "ZPJJ Base API", version: "0.1.0" } });
+}

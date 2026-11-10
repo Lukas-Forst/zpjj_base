@@ -2,7 +2,7 @@ import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { requireGesellschafter } from "../auth";
 import { batch, first, run, stmt, all } from "../db";
 import { HttpError } from "../errors";
-import { isUnique, normTime, SlotKind, TimeIn, Weekday } from "../schemas/common";
+import { IdParam, isUnique, normTime, SlotKind, TimeIn, Weekday } from "../schemas/common";
 import { listSlotsWithTrainers, type SlotRow } from "../slots";
 import type { AppEnv } from "../types";
 
@@ -37,7 +37,7 @@ const SlotPatch = z
     weekday: Weekday.nullish(),
     start_time: TimeIn.nullish(),
     end_time: TimeIn.nullish(),
-    kind: SlotKind.nullish(),
+    kind: SlotKind.or(z.null()).optional(),
     active: z.boolean().nullish(),
     sort_order: z.number().int().nullish(),
     location: z.string().nullish(), // "" = back to the home gym
@@ -49,7 +49,7 @@ const loc = (v: string | null | undefined) => (v ?? "").trim().slice(0, 50) || n
 const out = (s: SlotRow) => ({ ...s, trainers: s.trainers.map(({ id, display_name }) => ({ id, display_name })) });
 const json = <S extends z.ZodType>(schema: S) => ({ "application/json": { schema } });
 const guard = { middleware: [requireGesellschafter] };
-const idParam = z.object({ slot_id: z.coerce.number().int() });
+const idParam = z.object({ slot_id: IdParam });
 
 async function getOut(db: D1Database, id: number) {
   const s = (await listSlotsWithTrainers(db, { includeInactive: true, id }))[0];
@@ -70,7 +70,7 @@ export const slots = new OpenAPIHono<AppEnv>()
     createRoute({
       method: "get",
       path: "/slots",
-      request: { query: z.object({ include_inactive: z.enum(["true", "false"]).default("false") }) },
+      request: { query: z.object({ include_inactive: z.enum(["true", "false"]).default("false").openapi({ type: "boolean" }) }) },
       responses: { 200: { description: "Slots", content: json(z.array(SlotOut)) } },
     }),
     async (c) => {

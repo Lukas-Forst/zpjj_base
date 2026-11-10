@@ -1,11 +1,12 @@
 import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import { Role } from "../schemas/common";
 import type { AppEnv } from "../types";
 
 export const MeOut = z
   .object({
     id: z.number().int(),
     display_name: z.string(),
-    role: z.enum(["gesellschafter", "trainer"]),
+    role: Role,
     is_trainer: z.boolean(),
   })
   .openapi("MeOut");

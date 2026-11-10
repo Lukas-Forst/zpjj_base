@@ -2,7 +2,7 @@ import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { requireGesellschafter } from "../auth";
 import { all, first, run, stmt } from "../db";
 import { HttpError } from "../errors";
-import { NameIn, now, TimerMode } from "../schemas/common";
+import { IdParam, NameIn, now, TimerMode } from "../schemas/common";
 import type { AppEnv } from "../types";
 
 const MAX_SECONDS = 99 * 60 + 59; // 99:59
@@ -26,7 +26,7 @@ const PresetCreate = z
   })
   .openapi("PresetCreate");
 const PresetPatch = z
-  .object({ name: NameIn.nullish(), mode: TimerMode.nullish(), config: z.record(z.string(), z.unknown()).nullish(), sort_order: z.number().int().nullish() })
+  .object({ name: NameIn.nullish(), mode: TimerMode.or(z.null()).optional(), config: z.record(z.string(), z.unknown()).nullish(), sort_order: z.number().int().nullish() })
   .openapi("PresetPatch");
 
 type Row = { id: number; name: string; mode: Mode; config: string; sort_order: number };
@@ -34,7 +34,7 @@ const out = (r: Row) => ({ id: r.id, name: r.name, mode: r.mode, config: JSON.pa
 const COLS = "id, name, mode, config, sort_order";
 const json = <S extends z.ZodType>(schema: S) => ({ "application/json": { schema } });
 const guard = { middleware: [requireGesellschafter] };
-const idParam = z.object({ preset_id: z.coerce.number().int() });
+const idParam = z.object({ preset_id: IdParam });
 const get = async (db: D1Database, id: number) => {
   const r = await first<Row>(db, `SELECT ${COLS} FROM timer_presets WHERE id = ?`, id);
   if (!r) throw new HttpError(404, "Preset nicht gefunden.");

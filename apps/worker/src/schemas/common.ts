@@ -1,8 +1,8 @@
 import { z } from "@hono/zod-openapi";
 
-export const Role = z.enum(["gesellschafter", "trainer"]);
-export const SlotKind = z.enum(["no_gi", "gi", "open_mat"]);
-export const TimerMode = z.enum(["rounds", "countdown", "stopwatch"]);
+export const Role = z.enum(["gesellschafter", "trainer"]).openapi("Role");
+export const SlotKind = z.enum(["no_gi", "gi", "open_mat"]).openapi("SlotKind");
+export const TimerMode = z.enum(["rounds", "countdown", "stopwatch"]).openapi("TimerMode");
 
 const TIME_RE = /^([01]\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?$/;
 /** Input time: HH:MM or HH:MM:SS; stored and returned as HH:MM:SS (see normTime). */
@@ -25,3 +25,6 @@ export const DateIn = z
     const t = Date.parse(`${s}T00:00:00Z`); // zod runs refine even after a failed regex: never throw on garbage
     return !Number.isNaN(t) && new Date(t).toISOString().slice(0, 10) === s;
   }, "ungültiges Datum");
+
+/** Integer path/query id: coerced from the string, documented as a required integer. */
+export const IdParam = z.coerce.number().int().openapi({ type: "integer", param: { required: true } });

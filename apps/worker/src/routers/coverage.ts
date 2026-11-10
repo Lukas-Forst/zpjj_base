@@ -3,7 +3,7 @@ import { computeGaps, isoWeek, offByDay, slotStatus, type CovSubstitute, type Co
 import { addDays, isoWeekday, todayBerlin } from "../dates";
 import { all, first, run } from "../db";
 import { HttpError } from "../errors";
-import { DateIn, SlotKind } from "../schemas/common";
+import { DateIn, IdParam, SlotKind } from "../schemas/common";
 import { listSlotsWithTrainers } from "../slots";
 import type { AppEnv } from "../types";
 
@@ -139,7 +139,7 @@ export const coverage = new OpenAPIHono<AppEnv>()
     createRoute({
       method: "delete",
       path: "/coverage/substitutes",
-      request: { query: z.object({ slot_id: z.coerce.number().int(), date: DateIn, user_id: z.coerce.number().int() }) },
+      request: { query: z.object({ slot_id: IdParam, date: DateIn, user_id: IdParam }) },
       responses: { 204: { description: "Ausgetragen" } },
     }),
     async (c) => {

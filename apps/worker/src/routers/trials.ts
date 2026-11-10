@@ -3,9 +3,10 @@ import { all, first, run } from "../db";
 import { addDays, todayBerlin } from "../dates";
 import { HttpError } from "../errors";
 import { nameKey } from "../attendance";
-import { DateIn } from "../schemas/common";
+import { DateIn, IdParam } from "../schemas/common";
 import type { AppEnv } from "../types";
 
+const TrialStatus = z.enum(["offen", "mitglied", "zahlt_pro_besuch"]).openapi("TrialStatus");
 const TrialOut = z
   .object({
     id: z.number().int(), name: z.string(), status: z.string(), first_date: z.string(), member_since: z.string().nullable(),
@@ -13,7 +14,7 @@ const TrialOut = z
   })
   .openapi("TrialOut");
 const TrialPatch = z
-  .object({ status: z.enum(["offen", "mitglied", "zahlt_pro_besuch"]), member_since: DateIn.nullish() })
+  .object({ status: TrialStatus, member_since: DateIn.nullish() })
   .openapi("TrialPatch");
 const json = <S extends z.ZodType>(schema: S) => ({ "application/json": { schema } });
 
@@ -52,12 +53,12 @@ export const trials = new OpenAPIHono<AppEnv>()
   .openapi(
     createRoute({
       method: "patch",
-      path: "/trials/{id}",
-      request: { params: z.object({ id: z.coerce.number().int() }), body: { content: json(TrialPatch), required: true } },
+      path: "/trials/{trial_id}",
+      request: { params: z.object({ trial_id: IdParam }), body: { content: json(TrialPatch), required: true } },
       responses: { 200: { description: "Aktualisiert", content: json(TrialOut) } },
     }),
     async (c) => {
-      const { id } = c.req.valid("param");
+      const { trial_id: id } = c.req.valid("param");
       const body = c.req.valid("json");
       if (!(await first(c.env.DB, "SELECT id FROM trials WHERE id = ?", id))) throw new HttpError(404, "Person nicht gefunden.");
       const since = body.status === "mitglied" ? (body.member_since || todayBerlin()) : null;

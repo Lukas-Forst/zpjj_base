@@ -3,7 +3,7 @@ import { all, batch, first, stmt } from "../db";
 import { addDays, todayBerlin } from "../dates";
 import { HttpError } from "../errors";
 import { vacationChanged } from "../hooks";
-import { DateIn } from "../schemas/common";
+import { DateIn, IdParam } from "../schemas/common";
 import { now } from "../schemas/common";
 import type { AppEnv } from "../types";
 
@@ -83,7 +83,7 @@ export const vacations = new OpenAPIHono<AppEnv>()
     createRoute({
       method: "delete",
       path: "/vacations/{vacation_id}",
-      request: { params: z.object({ vacation_id: z.coerce.number().int() }) },
+      request: { params: z.object({ vacation_id: IdParam }) },
       responses: { 204: { description: "Gelöscht" } },
     }),
     async (c) => {
