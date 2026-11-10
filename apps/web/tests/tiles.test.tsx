@@ -28,10 +28,10 @@ describe("TileGrid", () => {
     expect(screen.getAllByLabelText("Öffnet in neuem Tab").length).toBe(2);
   });
 
-  it("marks coming-soon tiles as disabled with badge and links the schedule", () => {
+  it("links active tiles and shows no coming-soon badge", () => {
     render(<TileGrid role="trainer" env={env} />);
-    expect(screen.getByText("Anwesenheit").closest("[aria-disabled]")).toHaveAttribute("aria-disabled", "true");
-    expect(screen.getAllByText("bald").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("Anwesenheit").closest("a")).toHaveAttribute("href", "/anwesenheit/");
+    expect(screen.queryAllByText("bald")).toHaveLength(0);
     expect(screen.getByText("Urlaub").closest("a")).toHaveAttribute("href", "/urlaub/");
     expect(screen.getByText("Gym-Timer").closest("a")).toHaveAttribute("href", "/timer/");
     expect(screen.getByText("Stundenplan").closest("a")).toHaveAttribute("href", "/stundenplan/");
