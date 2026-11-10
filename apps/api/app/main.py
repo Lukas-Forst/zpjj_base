@@ -18,7 +18,17 @@ from app.dates import today_berlin
 from app.db import make_engine, make_session_factory
 from app.gcal import GoogleCalendar
 from app.models import Role, User
-from app.routers import coverage, me, presets, slots, sync_status, today, users, vacations
+from app.routers import (
+    attendance,
+    coverage,
+    me,
+    presets,
+    slots,
+    sync_status,
+    today,
+    users,
+    vacations,
+)
 
 log = logging.getLogger("base")
 
@@ -94,7 +104,7 @@ def create_app(settings: Settings | None = None, jwks: JWKSCache | None = None) 
     def healthz():
         return {"ok": True}
 
-    for r in (me.router, slots.router, users.router, presets.router, today.router, vacations.router, coverage.router, sync_status.router):
+    for r in (attendance.router, me.router, slots.router, users.router, presets.router, today.router, vacations.router, coverage.router, sync_status.router):
         app.include_router(r, prefix="/api")
     return app
 

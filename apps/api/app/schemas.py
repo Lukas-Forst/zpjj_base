@@ -236,3 +236,36 @@ class SyncOut(BaseModel):
     error_since: datetime | None
     last_ok_at: datetime | None
     unmatched: list[str]
+
+
+class AttendanceParseIn(BaseModel):
+    date: date
+    text: str
+
+
+class AttendanceParseOut(BaseModel):
+    total: int
+    trials: int
+    members: int
+    open_mat: int | None
+    beginner: int | None
+    names: list[str]
+    warnings: list[str]
+
+
+class AttendanceIn(BaseModel):
+    text: str | None = None
+    cancelled: bool = False
+
+
+class AttendanceOut(BaseModel):
+    date: date
+    cancelled: bool
+    total: int | None
+    trials: int
+    members: int | None
+    open_mat: int | None
+    beginner: int | None
+    names: list[str]
+    updated_by_name: str | None
+    updated_at: datetime
