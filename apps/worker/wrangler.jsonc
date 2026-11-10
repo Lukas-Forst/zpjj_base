@@ -2,7 +2,7 @@
   "name": "zpjj-base",
   "main": "src/index.ts",
   "compatibility_date": "2026-11-01",
-  "workers_dev": false,
+  "workers_dev": true,
   "preview_urls": false,
   "assets": {
     "directory": "../web/out",
@@ -12,9 +12,8 @@
     "not_found_handling": "404-page"
   },
   "d1_databases": [
-    { "binding": "DB", "database_name": "zpjj-base", "database_id": "<set at deploy>", "migrations_dir": "migrations" }
+    { "binding": "DB", "database_name": "zpjj-base", "database_id": "933bc941-2855-44f5-ba9f-fd3ab2b63649", "migrations_dir": "migrations" }
   ],
   "triggers": { "crons": ["*/15 * * * *"] },
-  "routes": [{ "pattern": "base.zpjj.de", "custom_domain": true }],
   "vars": { "ENV": "prod" }
 }
