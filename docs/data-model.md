@@ -1,13 +1,10 @@
 # Datenmodell
 
-## Migriert (M0/M1)
-- `users`, `slots`, `slot_trainers` (M0), `timer_presets` (M1), `vacations`, `substitutes`, `sync_state` (M3: Urlaub, Vertretung pro Slot und Datum, Zustand des Kalender-Abgleichs). Siehe `apps/api/app/models.py`.
+## Migriert (M0-M4)
+- `users`, `slots`, `slot_trainers` (M0), `timer_presets` (M1), `vacations`, `substitutes`, `sync_state` (M3: Urlaub, Vertretung pro Slot und Datum, Zustand des Kalender-Abgleichs). `attendance`, `trials`, `trial_attendance` (M4: eine Zeile pro Tag mit optionalen Open-Mat-/Anfänger-Zählern statt Sessions pro Slot; Probetrainierende per `name_key` eindeutig). Siehe `apps/api/app/models.py`.
 - Slot-Zeiten sind lokale Gym-Zeit (Europe/Berlin), Zeitstempel UTC. Slots werden nur deaktiviert.
 
 ## Nur dokumentiert (nicht migriert)
-- **sessions**: `date`, `slot_id` (nullable bei importierter Tages-Historie), `granularity` (`slot`|`day`), `status` (`erfasst`|`nicht_erfasst`|`ausgefallen`), `count_total`, `count_guests`, Trainer über `session_trainers` (optional `substitute_for_user_id`), `topic_planned_ref` (Trello-Karte), `topic_actual`, `note`.
-- **trials**: `uid`, `name`, `person_kind` (`trial`|`drop_in`), `first_date`, `converted`, `member_since`, `source`, `origin`, …
-- **trial_attendance**: `trial_id`, `session_id`.
 
 ## Regeln
 - Mitglieder = Gesamt − Probetraining − Gäste. "Nicht erfasst" ist **nicht** 0.

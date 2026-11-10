@@ -115,3 +115,36 @@ class SyncState(Base):
     error_since: Mapped[datetime | None] = mapped_column(sa.DateTime, nullable=True)
     error: Mapped[str | None] = mapped_column(sa.String(500), nullable=True)
     unmatched: Mapped[list] = mapped_column(sa.JSON, default=list)
+
+
+class Attendance(Base):
+    __tablename__ = "attendance"
+    __table_args__ = (
+        sa.CheckConstraint("total IS NULL OR trials <= total"),
+        sa.CheckConstraint(
+            "(total IS NULL OR total >= 0) AND trials >= 0"
+            " AND (open_mat IS NULL OR open_mat >= 0) AND (beginner IS NULL OR beginner >= 0)"
+        ),
+    )
+    date: Mapped[dt.date] = mapped_column(primary_key=True)
+    cancelled: Mapped[bool] = mapped_column(default=False)
+    total: Mapped[int | None] = mapped_column(nullable=True)
+    trials: Mapped[int] = mapped_column(default=0)
+    open_mat: Mapped[int | None] = mapped_column(nullable=True)
+    beginner: Mapped[int | None] = mapped_column(nullable=True)
+    updated_by: Mapped[int | None] = mapped_column(sa.ForeignKey("users.id"), nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(sa.DateTime, default=_now, onupdate=_now)
+
+
+class Trial(Base):
+    __tablename__ = "trials"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(sa.String(100))
+    name_key: Mapped[str] = mapped_column(sa.String(100), unique=True)  # casefolded name
+    first_date: Mapped[dt.date]
+
+
+class TrialAttendance(Base):
+    __tablename__ = "trial_attendance"
+    trial_id: Mapped[int] = mapped_column(sa.ForeignKey("trials.id"), primary_key=True)
+    date: Mapped[dt.date] = mapped_column(sa.ForeignKey("attendance.date"), primary_key=True)
