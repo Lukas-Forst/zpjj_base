@@ -3,6 +3,7 @@
 // start screen and /timer/ work offline after the first load.
 const CACHE = "base-v1";
 const SHELL = ["/", "/timer/", "/stundenplan/", "/offline/"];
+const SOUNDS = ["/sounds/start.mp3"]; // timer start signal must work offline in the gym
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -19,6 +20,7 @@ self.addEventListener("install", (event) => {
           await Promise.all([...assets].map((a) => cache.add(a).catch(() => {})));
         } catch { /* offline during install: runtime caching will fill in */ }
       }
+      await Promise.all(SOUNDS.map((u) => cache.add(u).catch(() => {})));
       self.skipWaiting();
     })(),
   );

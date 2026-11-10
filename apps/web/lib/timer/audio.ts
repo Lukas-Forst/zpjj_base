@@ -4,14 +4,19 @@ export const SOUNDS = {
   gong: "Gong",
   ton: "Langer Ton",
   pieps: "Dreifach-Pieps",
+  start: "Startsignal (Datei)",
 } as const;
 export type SoundId = keyof typeof SOUNDS;
 export const isSoundId = (x: unknown): x is SoundId => typeof x === "string" && x in SOUNDS;
 
-// All sounds are synthesized with WebAudio, no audio files. unlock() must run in a user gesture.
+// Sounds are synthesized with WebAudio, except "start" which plays /sounds/start.mp3.
+// unlock() must run in a user gesture; it also preloads the file.
+const FILE_URL = "/sounds/start.mp3";
 export class Beeper {
   private ctx?: AudioContext;
   private master?: GainNode;
+  private file?: AudioBuffer;
+  private loading?: Promise<void>;
   volume = 0.7;
   muted = false;
   startSound: SoundId = "buzzer";
@@ -27,7 +32,25 @@ export class Beeper {
       this.apply();
     }
     void this.ctx.resume();
+    void this.load();
   }
+
+  /** Fetch and decode the sound file once; a failure allows a retry on the next unlock(). */
+  private load(): Promise<void> {
+    if (this.file) return Promise.resolve();
+    this.loading ??= (async () => {
+      try {
+        const res = await fetch(FILE_URL);
+        if (!res.ok || !this.ctx) throw new Error("sound file unavailable");
+        this.file = await this.ctx.decodeAudioData(await res.arrayBuffer());
+      } catch {
+        this.loading = undefined;
+      }
+    })();
+    return this.loading;
+  }
+
+  ready(): Promise<void> { return this.loading ?? Promise.resolve(); }
 
   setSounds(start: SoundId, rest: SoundId) {
     this.startSound = start;
@@ -101,10 +124,19 @@ export class Beeper {
     }
   }
   gong() { this.tone(330, 0, 1.2); this.tone(330, 0.9, 1.4); } // double gong, also end of the session
+  /** The uploaded start signal; until it is loaded (first tap, offline) the buzzer plays instead of silence. */
+  private startFile() {
+    if (!this.ctx || !this.master) return;
+    if (!this.file) { void this.load(); this.buzzer(); return; }
+    const src = this.ctx.createBufferSource();
+    src.buffer = this.file;
+    src.connect(this.master);
+    src.start();
+  }
   private triple() { for (const at of [0, 0.25, 0.5]) this.tone(988, at, 0.15); }
 
   play(id: SoundId) {
-    ({ buzzer: () => this.buzzer(), glocke: () => this.bell(), gong: () => this.gong(), ton: () => this.phase(), pieps: () => this.triple() })[id]();
+    ({ buzzer: () => this.buzzer(), glocke: () => this.bell(), gong: () => this.gong(), ton: () => this.phase(), pieps: () => this.triple(), start: () => this.startFile() })[id]();
   }
   roundStart() { this.play(this.startSound); }
   rest() { this.play(this.restSound); }
