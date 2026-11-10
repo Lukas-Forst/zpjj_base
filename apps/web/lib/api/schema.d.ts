@@ -298,6 +298,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/coverage/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Plan
+         * @description This week and the next two (Mon-Sun), from today on, one card per active slot.
+         */
+        get: operations["plan_api_coverage_plan_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/coverage/substitutes": {
         parameters: {
             query?: never;
@@ -484,6 +504,60 @@ export interface components {
         MissingOut: {
             /** Date */
             date: string | null;
+        };
+        /** PlanDay */
+        PlanDay: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Weekday */
+            weekday: number;
+            /** Slots */
+            slots: components["schemas"]["PlanSlot"][];
+        };
+        /** PlanSlot */
+        PlanSlot: {
+            /** Slot Id */
+            slot_id: number;
+            /**
+             * Start Time
+             * Format: time
+             */
+            start_time: string;
+            kind: components["schemas"]["SlotKind"];
+            /** Status */
+            status: string;
+            /** Trainers */
+            trainers: string[];
+            /** Absent */
+            absent: string[];
+            /** Substitutes */
+            substitutes: components["schemas"]["PlanSubstitute"][];
+        };
+        /** PlanSubstitute */
+        PlanSubstitute: {
+            /** User Id */
+            user_id: number;
+            /** User Name */
+            user_name: string;
+        };
+        /** PlanWeek */
+        PlanWeek: {
+            /**
+             * Week Start
+             * Format: date
+             */
+            week_start: string;
+            /** Iso Week */
+            iso_week: number;
+            /** Unbesetzt */
+            unbesetzt: number;
+            /** Teilweise */
+            teilweise: number;
+            /** Days */
+            days: components["schemas"]["PlanDay"][];
         };
         /** PresetCreate */
         PresetCreate: {
@@ -1447,6 +1521,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GapOut"][];
+                };
+            };
+        };
+    };
+    plan_api_coverage_plan_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanWeek"][];
                 };
             };
         };

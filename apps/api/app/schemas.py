@@ -200,6 +200,35 @@ class GapOut(BaseModel):
     absent: list[str]
 
 
+class PlanSubstitute(BaseModel):
+    user_id: int
+    user_name: str
+
+
+class PlanSlot(BaseModel):
+    slot_id: int
+    start_time: time
+    kind: SlotKind
+    status: str  # besetzt | teilweise | unbesetzt | vertreten | nicht_geprueft
+    trainers: list[str]
+    absent: list[str]
+    substitutes: list[PlanSubstitute]
+
+
+class PlanDay(BaseModel):
+    date: date
+    weekday: int
+    slots: list[PlanSlot]
+
+
+class PlanWeek(BaseModel):
+    week_start: date
+    iso_week: int
+    unbesetzt: int
+    teilweise: int
+    days: list[PlanDay]
+
+
 class SubstituteOut(BaseModel):
     slot_id: int
     date: date
