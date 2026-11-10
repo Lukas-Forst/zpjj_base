@@ -1,4 +1,5 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
+import { HTTPException } from "hono/http-exception";
 import { auth } from "./auth";
 import { onVacationChange } from "./calsync";
 import { HttpError } from "./errors";
@@ -15,13 +16,18 @@ import { users } from "./routers/users";
 import { vacations } from "./routers/vacations";
 import type { AppEnv } from "./types";
 
+const INVALID = "Ungültige Eingabe.";
+// zod's English default texts; the app's own messages are German
+const ZOD_DEFAULT = /^(Invalid |Too (small|big): |Unrecognized key)/;
+
 hooks.onVacationChange = onVacationChange;
 
 export function createApp(): OpenAPIHono<AppEnv> {
   const app = new OpenAPIHono<AppEnv>({
     defaultHook: (result, c) => {
       if (!result.success) {
-        return c.json({ detail: result.error.issues[0]?.message ?? "Ungültige Eingabe." }, 422);
+        const m = result.error.issues[0]?.message;
+        return c.json({ detail: !m || ZOD_DEFAULT.test(m) ? INVALID : m }, 422);
       }
     },
   });
@@ -50,6 +56,11 @@ export function createApp(): OpenAPIHono<AppEnv> {
   app.notFound((c) => c.json({ detail: "Nicht gefunden." }, 404));
   app.onError((err, c) => {
     if (err instanceof HttpError) return c.json({ detail: err.detail }, err.status as 400);
+    if (err instanceof HTTPException) {
+      // Hono: 400 = malformed JSON, 415 = wrong Content-Type (Python answered 422)
+      if (err.status === 400 || err.status === 415) return c.json({ detail: INVALID }, 422);
+      return c.json({ detail: err.status === 413 ? "Anfrage zu groß." : "Anfrage fehlgeschlagen." }, err.status as 400);
+    }
     console.error(err);
     return c.json({ detail: "Interner Fehler." }, 500);
   });
