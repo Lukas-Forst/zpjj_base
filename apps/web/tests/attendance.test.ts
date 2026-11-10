@@ -19,3 +19,10 @@ describe("attendance helpers", () => {
     expect(attendanceLine("2026-11-10", { ...c, trials: 2, names: ["A", "B"] })).toContain("2 Probetrainings: A, B");
   });
 });
+
+describe("guests in line", () => {
+  it("shows guests when present", () => {
+    expect(attendanceLine("2026-11-10", { total: 10, members: 6, trials: 1, guests: 3, open_mat: null, beginner: null, names: ["A"] }))
+      .toBe("Di 10.11. · 10 gesamt · 6 Mitglieder · 1 Probetraining: A · 3 Gäste");
+  });
+});

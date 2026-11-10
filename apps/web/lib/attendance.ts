@@ -5,7 +5,7 @@ export const todayISO = (d = new Date()) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 type Counts = {
-  total: number | null; members: number | null; trials: number;
+  total: number | null; members: number | null; trials: number; guests?: number;
   open_mat: number | null; beginner: number | null; names: string[];
 };
 
@@ -16,8 +16,12 @@ export function attendanceLine(iso: string, c: Counts): string {
   if (c.total !== null) {
     parts.push(`${c.total} gesamt`, `${c.members} Mitglieder`);
     parts.push(`${c.trials} Probetraining${c.trials === 1 ? "" : "s"}${c.names.length ? `: ${c.names.join(", ")}` : ""}`);
+    if (c.guests) parts.push(`${c.guests} Gäste`);
   }
   if (c.open_mat !== null) parts.push(`Openmat ${c.open_mat}`);
   if (c.beginner !== null) parts.push(`Anfängerkurs ${c.beginner}`);
   return parts.join(" · ");
 }
+
+/** Sunday headcount: members plus trials plus paying guests. */
+export const sundayTotal = (members: number, trials: number, guests: number) => members + trials + guests;
