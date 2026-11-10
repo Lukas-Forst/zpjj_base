@@ -6,6 +6,7 @@ import { coverage } from "./routers/coverage";
 import { me } from "./routers/me";
 import { presets } from "./routers/presets";
 import { slots } from "./routers/slots";
+import { trials } from "./routers/trials";
 import { users } from "./routers/users";
 import { vacations } from "./routers/vacations";
 import type { AppEnv } from "./types";
@@ -36,6 +37,7 @@ export function createApp(): OpenAPIHono<AppEnv> {
   app.route("/api", vacations);
   app.route("/api", coverage);
   app.route("/api", attendance);
+  app.route("/api", trials);
 
   app.notFound((c) => c.json({ detail: "Nicht gefunden." }, 404));
   app.onError((err, c) => {

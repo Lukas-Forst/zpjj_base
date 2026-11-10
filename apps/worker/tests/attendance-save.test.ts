@@ -19,8 +19,13 @@ const trials = async () => (await env.DB.prepare("SELECT name, first_date, statu
 const count = async (t: string) => (await env.DB.prepare(`SELECT COUNT(*) n FROM ${t}`).first<{ n: number }>())!.n;
 const imported = (name: string, first: string) =>
   env.DB.prepare("INSERT INTO trials (name, name_key, first_date) VALUES (?,?,?)").bind(name, name.toLowerCase(), first).run();
-const flag = (name: string, since: string | null = null) =>
-  env.DB.prepare("UPDATE trials SET status='mitglied', member_since=? WHERE name=?").bind(since, name).run();
+// raw SQL only where member_since must stay NULL (PATCH would set it to today)
+const flagNull = (name: string) => env.DB.prepare("UPDATE trials SET status='mitglied', member_since=NULL WHERE name=?").bind(name).run();
+const flag = async (name: string, since?: string) => {
+  const t = (await env.DB.prepare("SELECT id FROM trials WHERE name=?").bind(name).first<{ id: number }>())!;
+  const r = await call(`/api/trials/${t.id}`, { method: "PATCH", as: EMAIL, json: since ? { status: "mitglied", member_since: since } : { status: "mitglied" } });
+  expect(r.status).toBe(200);
+};
 const statuses = async () => Object.fromEntries((await trials()).map((t) => [t.name, t.status]));
 
 it("weekday saves counts and trial (test_put_weekday_saves_counts_and_trial)", async () => {
@@ -98,7 +103,7 @@ it("guests reduce members (test_guests_reduce_members)", async () => {
 });
 it("member flagged name rejected (test_member_flagged_name_rejected)", async () => {
   await imported("Anna", last(3, 3));
-  await flag("Anna");
+  await flagNull("Anna");
   const r = await put(last(3), { total: 10, trial_names: ["anna"] });
   expect(r.status).toBe(422);
   expect(((await r.json()) as any).detail.toLowerCase()).toContain("anna");
@@ -170,7 +175,7 @@ it("rejected request leaves row counts unchanged (new)", async () => {
   const d = last(3);
   await put(d, { total: 10, trial_names: ["David"] });
   await imported("Anna", last(3, 3));
-  await flag("Anna");
+  await flagNull("Anna");
   const before = [await count("attendance"), await count("trials"), await count("trial_attendance")];
   for (const body of [
     { total: 10, trial_names: ["New", "new"] },

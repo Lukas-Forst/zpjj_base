@@ -21,4 +21,7 @@ export const isUnique = (e: unknown): boolean => String(e).includes("UNIQUE");
 export const DateIn = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, "ungültiges Datum")
-  .refine((s) => new Date(`${s}T00:00:00Z`).toISOString().slice(0, 10) === s, "ungültiges Datum");
+  .refine((s) => {
+    const t = Date.parse(`${s}T00:00:00Z`); // zod runs refine even after a failed regex: never throw on garbage
+    return !Number.isNaN(t) && new Date(t).toISOString().slice(0, 10) === s;
+  }, "ungültiges Datum");
