@@ -32,7 +32,9 @@ def import_workbook(db: Session, path: Path) -> dict[str, int]:
     for r in list(wb["Trainingseinheiten"].iter_rows(min_row=2, values_only=True)):
         r = (list(r) + [None] * 11)[:11]
         d, kind, g, h, names = _d(r[0]), r[4], r[6], r[7], r[10]
-        if d is None or not isinstance(g, (int, float)):
+        if d is None:
+            continue  # blank padding row
+        if not isinstance(g, (int, float)):
             skipped += 1
             continue
         g = int(g)
