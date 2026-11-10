@@ -4,7 +4,7 @@ import { deDate } from "@/lib/format";
 type WeekPoint = components["schemas"]["WeekPoint"];
 export const num = (n: number) => String(Math.round(n * 10) / 10).replace(".", ",");
 
-const W = 320, H = 150, L = 8, R = 8, T = 22, B = 24;
+const W = 320, H = 165, L = 14, R = 10, T = 22, B = 40;
 
 export function WeeklyLine({ weeks }: { weeks: WeekPoint[] }) {
   const vals = weeks.map((w) => w.avg);
@@ -24,7 +24,6 @@ export function WeeklyLine({ weeks }: { weeks: WeekPoint[] }) {
     ? `Ø Teilnehmer pro Woche: zuerst ${num(known[0])}, zuletzt ${num(known[known.length - 1])}`
     : "Ø Teilnehmer pro Woche: keine Daten";
   const lastIdx = vals.length - 1 - [...vals].reverse().findIndex((v) => v !== null);
-  const ticks = weeks.length ? [...new Set([0, Math.floor((weeks.length - 1) / 2), weeks.length - 1])] : [];
 
   return (
     <svg role="img" aria-label={label} viewBox={`0 0 ${W} ${H}`} className="w-full text-neutral-900 dark:text-neutral-100">
@@ -36,7 +35,8 @@ export function WeeklyLine({ weeks }: { weeks: WeekPoint[] }) {
           <text x={x(i)} y={y(v) - 8} textAnchor="middle" fontSize={i === lastIdx ? 12 : 9} fontWeight={i === lastIdx ? 700 : 400} fill="currentColor">{num(v)}</text>
         </g>
       ))}
-      {ticks.map((i) => <text key={i} x={x(i)} y={H - 6} textAnchor={i === 0 ? "start" : i === weeks.length - 1 ? "end" : "middle"} fontSize={10} fill="currentColor" fillOpacity={0.7}>{deDate(weeks[i].week_start)}</text>)}
+      {/* a date under every week (rotated so 12 labels fit on a phone), gap weeks included */}
+      {weeks.map((w, i) => <text key={w.week_start} x={x(i)} y={H - B + 12} textAnchor="end" transform={`rotate(-45 ${x(i)} ${H - B + 12})`} fontSize={10} fill="currentColor" fillOpacity={0.7}>{deDate(w.week_start)}</text>)}
     </svg>
   );
 }
