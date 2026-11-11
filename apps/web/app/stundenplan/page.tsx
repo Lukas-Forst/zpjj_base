@@ -1,11 +1,13 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AppShell, useCurrentMe } from "@/components/AppShell";
+import { SlotTag, type SlotKind } from "@/components/ui";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
 import { KIND_LABEL, WEEKDAYS, hhmm } from "@/lib/format";
 
 type Slot = components["schemas"]["SlotOut"];
+const TAG: Record<string, SlotKind> = { no_gi: "nogi", gi: "gi", open_mat: "openmat" };
 type User = components["schemas"]["UserOut"];
 
 function TrainerDialog({ slot, users, onClose, onSaved }: { slot: Slot; users: User[]; onClose: () => void; onSaved: () => void }) {
@@ -20,7 +22,7 @@ function TrainerDialog({ slot, users, onClose, onSaved }: { slot: Slot; users: U
     if (response.ok) { onSaved(); onClose(); } else setErr("Speichern fehlgeschlagen.");
   };
   return (
-    <dialog ref={ref} onClose={onClose} className="m-auto w-[min(90vw,24rem)] rounded-2xl p-5">
+    <dialog ref={ref} onClose={onClose} className="m-auto w-[min(90vw,24rem)] bg-paper p-5 text-ink">
       <h2 className="mb-3 text-lg font-semibold">
         Trainer: {WEEKDAYS[slot.weekday]} {hhmm(slot.start_time)} {KIND_LABEL[slot.kind]}{slot.location ? ` (${slot.location})` : ""}
       </h2>
@@ -33,10 +35,10 @@ function TrainerDialog({ slot, users, onClose, onSaved }: { slot: Slot; users: U
           </label>
         ))}
       </div>
-      {err && <p role="alert" className="mt-2 text-danger">{err}</p>}
+      {err && <p role="alert" className="mt-2 text-ink font-semibold">{err}</p>}
       <div className="mt-4 flex justify-end gap-2">
-        <button className="min-h-11 rounded-lg px-4" onClick={onClose}>Abbrechen</button>
-        <button className="min-h-11 rounded-lg bg-accent px-4 text-accent-foreground" onClick={save}>Speichern</button>
+        <button className="min-h-11 rounded-sm px-4" onClick={onClose}>Abbrechen</button>
+        <button className="min-h-11 rounded-sm bg-accent px-4 text-accent-foreground" onClick={save}>Speichern</button>
       </div>
     </dialog>
   );
@@ -57,25 +59,32 @@ function Plan() {
   }, [admin]);
   useEffect(() => { load().catch(() => setError("Stundenplan konnte nicht geladen werden.")); }, [load]);
 
-  if (error) return <p role="alert" className="p-4 text-danger">{error}</p>;
-  if (!slots) return <p className="p-4" role="status">Lade …</p>;
-  const days = [2, 3, 4, 5, 6, 7, 1].map((d) => ({ d, items: slots.filter((s) => s.weekday === d) }));
+  if (error) return <p role="alert" className="p-5 font-semibold">{error}</p>;
+  if (!slots) return <p className="p-5" role="status">Lade …</p>;
+  const today = new Date().getDay() || 7;
+  const days = [1, 2, 3, 4, 5, 6, 7].map((d) => ({ d, items: slots.filter((s) => s.weekday === d).sort((a, b) => a.start_time.localeCompare(b.start_time)) }));
   return (
-    <main className="mx-auto max-w-3xl p-4">
-      <h1 className="mb-4 text-xl font-semibold">Stundenplan</h1>
-      <div className="flex flex-col gap-4">
+    <main className="mx-auto max-w-[1280px] px-5 py-6 lg:px-12">
+      <h1 className="mb-6 text-[28px] font-bold leading-8 tracking-[-0.02em] lg:text-[40px] lg:leading-[44px]">Stundenplan</h1>
+      <div className="grid border-t-2 border-ink lg:grid-cols-7 lg:border-l lg:border-hairline">
         {days.map(({ d, items }) => (
-          <section key={d} aria-labelledby={`d${d}`}>
-            <h2 id={`d${d}`} className="mb-1 font-semibold">{WEEKDAYS[d]}</h2>
-            {items.length === 0 ? <p className="text-sm text-neutral-600">trainingsfrei</p> : (
-              <ul className="flex flex-col gap-2">
+          <section key={d} aria-labelledby={`d${d}`} className="border-b border-hairline py-3 lg:border-r lg:px-3">
+            <h2 id={`d${d}`} className={`mb-1 flex items-center gap-2 text-lg font-bold ${d === today ? "text-action" : ""}`}>
+              {WEEKDAYS[d]}{d === today && <span className="text-xs font-semibold uppercase tracking-widest">Heute</span>}
+            </h2>
+            {items.length === 0 ? <p className="text-sm text-muted-ink">trainingsfrei</p> : (
+              <ul>
                 {items.map((s) => (
-                  <li key={s.id} className="flex items-center justify-between gap-2 rounded-xl border border-neutral-200 p-3">
+                  <li key={s.id} className="flex items-center justify-between gap-2 border-t border-hairline py-2 first:border-t-0">
                     <div>
-                      <div className="font-medium">{hhmm(s.start_time)}–{hhmm(s.end_time)} · {KIND_LABEL[s.kind]}{s.location ? ` · ${s.location}` : ""}</div>
-                      <div className="text-sm text-neutral-600">{s.trainers.length ? s.trainers.map((t) => t.display_name).join(", ") : "kein Trainer"}</div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-mono text-sm font-semibold">{hhmm(s.start_time)}</span>
+                        <SlotTag kind={TAG[s.kind]} />
+                        {s.location && <span className="text-xs text-muted-ink">{s.location}</span>}
+                      </div>
+                      <div className="text-sm text-muted-ink">{s.trainers.length ? s.trainers.map((t) => t.display_name).join(", ") : "kein Trainer"}</div>
                     </div>
-                    {admin && <button className="min-h-11 rounded-lg border border-accent px-3 text-accent" onClick={() => setEditing(s)}>Trainer ändern</button>}
+                    {admin && <button className="min-h-11 px-2 text-sm font-semibold text-action" onClick={() => setEditing(s)}>Ändern</button>}
                   </li>
                 ))}
               </ul>
