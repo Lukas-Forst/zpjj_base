@@ -1,17 +1,12 @@
 @import "tailwindcss";
 @import "@heroui/styles";
-
-:root {
-  --accent: #2454e0;
-  --accent-foreground: #ffffff;
-  --brand-red: #d0121a; /* logo and small accents only, never actions */
-}
+@import "../styles/tokens.css";
 
 @keyframes pulse-amber {
-  0%, 100% { color: #f4f7ff; }
-  50% { color: #f5b942; }
+  0%, 100% { color: var(--night-text); }
+  50% { color: var(--warn); }
 }
 .timer-last10 { animation: pulse-amber 1s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
-  .timer-last10 { animation: none; color: #f5b942; }
+  .timer-last10 { animation: none; color: var(--warn); }
 }

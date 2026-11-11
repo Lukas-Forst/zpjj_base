@@ -1,0 +1,72 @@
+/* Design tokens "Ink & Paper". All colors in components come from here. */
+:root {
+  --paper: #f3f1ec;
+  --ink: #14161a;
+  --muted-ink: #5e6169; /* secondary text, >= 5:1 on paper */
+  --hairline: #d9d5cc;
+  --hairline-strong: #c9c4b8;
+  --action: #2454e0;
+  --action-ink: #ffffff;
+  --brand-red: #d0121a; /* logo bar only */
+  --warn: #f5b942; /* small dot / timer prep only */
+  --open-mat-bg: #e8eeff;
+  --open-mat-ink: #1b3fb5;
+
+  /* dark: /timer only */
+  --night: #0c0d10;
+  --night-surface: #14161b;
+  --night-border: #262a33;
+  --night-text: #f2f3f5;
+  --night-muted: #9aa0ab;
+  --night-label: #7fa2ff;
+  --rest-slate: #64748b;
+
+  /* HeroUI overrides: no parallel palette */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --surface: var(--paper);
+  --muted: var(--muted-ink);
+  --default: var(--hairline);
+  --border: var(--hairline);
+  --separator: var(--hairline);
+  --accent: var(--action);
+  --accent-foreground: var(--action-ink);
+  --focus: var(--action);
+  --field-background: var(--paper);
+  --field-foreground: var(--ink);
+  --field-border: var(--hairline-strong);
+  --radius: 2px;
+  --danger: var(--ink);
+  --field-radius: 2px;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter-tight), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-muted-ink: var(--muted-ink);
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+  --color-action: var(--action);
+  --color-action-ink: var(--action-ink);
+  --color-brand-red: var(--brand-red);
+  --color-warn: var(--warn);
+  --color-open-mat: var(--open-mat-bg);
+  --color-open-mat-ink: var(--open-mat-ink);
+  --color-night: var(--night);
+  --color-night-surface: var(--night-surface);
+  --color-night-border: var(--night-border);
+  --color-night-text: var(--night-text);
+  --color-night-muted: var(--night-muted);
+  --color-night-label: var(--night-label);
+  --color-rest-slate: var(--rest-slate);
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 2px;
+  --radius-2xl: 2px;
+}
+
+:focus-visible { outline: 2px solid var(--action); outline-offset: 2px; }
+body { font-family: var(--font-inter-tight), system-ui, sans-serif; }
