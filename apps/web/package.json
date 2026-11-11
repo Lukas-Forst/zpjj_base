@@ -7,6 +7,7 @@
     "build": "next build",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "check:design": "bash scripts/check-design.sh",
     "test": "vitest run",
     "gen:api": "cd ../worker && npm run -s openapi > ../web/lib/api/openapi.json && cd ../web && openapi-typescript lib/api/openapi.json -o lib/api/schema.d.ts"
   },
@@ -14,6 +15,7 @@
     "@heroui/react": "^3.2.7",
     "@heroui/styles": "^3.2.7",
     "@tailwindcss/postcss": "^4.3.5",
+    "lucide-react": "^1.72.0",
     "next": "^16.4.5",
     "openapi-fetch": "^0.17.0",
     "react": "^19.3.1",
