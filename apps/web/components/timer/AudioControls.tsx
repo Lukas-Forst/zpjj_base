@@ -1,4 +1,5 @@
 "use client";
+import { Volume2, VolumeX } from "lucide-react";
 import { useState } from "react";
 import { type Beeper, SOUNDS, type SoundId, isSoundId } from "@/lib/timer/audio";
 import { KEYS, load, save } from "@/lib/timer/storage";
@@ -9,7 +10,7 @@ export function loadAudio(b: Beeper) {
   b.setSounds(isSoundId(a.start) ? a.start : b.startSound, isSoundId(a.rest) ? a.rest : b.restSound);
 }
 
-const SELECT = "min-h-14 rounded-xl border border-[#2B3A5E] bg-[#0B1220] px-2 text-[#F4F7FF]";
+const SELECT = "min-h-12 border border-night-border bg-night px-2 text-night-text";
 
 export function AudioControls({ beeper }: { beeper: Beeper }) {
   const [vol, setVol] = useState(beeper.volume);
@@ -33,21 +34,21 @@ export function AudioControls({ beeper }: { beeper: Beeper }) {
   return (
     <div className="flex flex-wrap items-center gap-3">
       <button type="button" aria-pressed={muted} onClick={() => persist({ muted: !muted })}
-        className="min-h-14 min-w-14 rounded-xl border border-[#2B3A5E] bg-[#131C33] px-3">
-        {muted ? "🔇 Stumm" : "🔊 Ton"}
+        className="inline-flex min-h-12 min-w-12 items-center gap-2 border border-night-border bg-night-surface px-3 font-semibold">
+        {muted ? <VolumeX size={18} strokeWidth={1.75} aria-hidden /> : <Volume2 size={18} strokeWidth={1.75} aria-hidden />}{muted ? "Stumm" : "Ton"}
       </button>
-      <label className="flex items-center gap-2 text-sm text-[#9FB0D6]">
+      <label className="flex items-center gap-2 text-sm text-night-muted">
         Lautstärke
         <input type="range" min={0} max={1} step={0.05} value={vol} aria-label="Lautstärke"
           onChange={(e) => persist({ volume: Number(e.target.value) })} />
       </label>
-      <label className="flex items-center gap-2 text-sm text-[#9FB0D6]">
+      <label className="flex items-center gap-2 text-sm text-night-muted">
         Ton Rundenstart
         <select className={SELECT} value={start} onChange={(e) => pick("start", e.target.value)}>
           {Object.entries(SOUNDS).map(([id, l]) => <option key={id} value={id}>{l}</option>)}
         </select>
       </label>
-      <label className="flex items-center gap-2 text-sm text-[#9FB0D6]">
+      <label className="flex items-center gap-2 text-sm text-night-muted">
         Ton Pause
         <select className={SELECT} value={rest} onChange={(e) => pick("rest", e.target.value)}>
           {Object.entries(SOUNDS).map(([id, l]) => <option key={id} value={id}>{l}</option>)}

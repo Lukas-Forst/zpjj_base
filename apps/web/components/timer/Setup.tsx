@@ -1,4 +1,5 @@
 "use client";
+import { Play } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/lib/api/client";
 import { errText } from "@/lib/format";
@@ -7,8 +8,8 @@ import { type Form, type Mode, MAX_SECONDS, clamp, fromPreset, presetBody, sanit
 import { type Preset, usePresets } from "@/lib/timer/usePresets";
 import { AudioControls } from "./AudioControls";
 
-const FIELD = "min-h-14 w-20 rounded-xl border border-[#2B3A5E] bg-[#0B1220] px-3 text-center text-xl tabular-nums";
-const CARD = "rounded-2xl border border-[#2B3A5E] bg-[#131C33] p-4";
+const FIELD = "min-h-12 w-20 border border-night-border bg-night px-3 text-center font-mono text-xl font-semibold tabular-nums";
+const CARD = "border-t border-night-border py-4";
 const MODES: [Mode, string][] = [["rounds", "Runden"], ["countdown", "Countdown"], ["stopwatch", "Stoppuhr"]];
 
 function Num({ label, value, min, max, onChange }: { label: string; value: number; min: number; max: number; onChange: (n: number) => void }) {
@@ -62,12 +63,11 @@ export function Setup({ form, setForm, isAdmin, beeper, onStart }: {
   };
 
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-4 p-4">
-      <h1 className="text-2xl font-semibold">Gym-Timer</h1>
+    <main className="mx-auto flex max-w-2xl flex-col gap-4 px-5 pb-6">
       <div role="tablist" aria-label="Modus" className="grid grid-cols-3 gap-2">
         {MODES.map(([m, l]) => (
           <button key={m} role="tab" aria-selected={form.mode === m} onClick={() => upd({ mode: m })}
-            className={`min-h-14 rounded-xl border text-lg ${form.mode === m ? "border-[#7FA2FF] bg-[#2454E0] text-white" : "border-[#2B3A5E] bg-[#131C33]"}`}>{l}</button>
+            className={`min-h-12 border font-semibold ${form.mode === m ? "border-action bg-action text-action-ink" : "border-night-border bg-night-surface"}`}>{l}</button>
         ))}
       </div>
 
@@ -81,36 +81,36 @@ export function Setup({ form, setForm, isAdmin, beeper, onStart }: {
           </>
         )}
         {form.mode === "countdown" && <Time label="Dauer" value={form.duration} min={1} onChange={(duration) => upd({ duration })} />}
-        {form.mode === "stopwatch" && <p className="text-[#9FB0D6]">Zählt hoch. Start, Pause und Reset im Timer.</p>}
+        {form.mode === "stopwatch" && <p className="text-night-muted">Zählt hoch. Start, Pause und Reset im Timer.</p>}
       </div>
 
-      <button className="min-h-[88px] rounded-2xl bg-[#2454E0] text-2xl font-bold text-white" onClick={() => { beeper.unlock(); onStart(); }}>
-        Start
+      <button className="flex min-h-[72px] items-center justify-center gap-3 bg-action text-[22px] font-bold text-action-ink" onClick={() => { beeper.unlock(); onStart(); }}>
+        <Play size={24} strokeWidth={1.75} aria-hidden />Starten
       </button>
 
       <section className={`${CARD} flex flex-col gap-3`} aria-labelledby="presets">
-        <h2 id="presets" className="text-lg font-semibold">Team-Presets</h2>
-        {fromCache && <p className="text-sm text-[#9FB0D6]">Offline: zuletzt gespeicherte Presets.</p>}
-        {msg && <p role="alert" className="rounded-lg bg-danger-soft p-2 text-danger">{msg}</p>}
-        {presets.length === 0 && <p className="text-[#9FB0D6]">Keine Presets vorhanden.</p>}
+        <h2 id="presets" className="text-[13px] font-semibold uppercase tracking-[0.14em] text-night-muted">Team-Presets</h2>
+        {fromCache && <p className="text-sm text-night-muted">Offline: zuletzt gespeicherte Presets.</p>}
+        {msg && <p role="alert" className="border border-night-border p-2 text-night-text">{msg}</p>}
+        {presets.length === 0 && <p className="text-night-muted">Keine Presets vorhanden.</p>}
         <ul className="flex flex-col gap-2">
           {presets.map((p) => (
             <li key={p.id} className="flex flex-wrap items-center gap-2">
-              <button className="min-h-14 flex-1 rounded-xl border border-[#2B3A5E] bg-[#0B1220] px-4 text-left text-lg" onClick={() => setForm(fromPreset(p))}>{p.name}</button>
+              <button className="min-h-12 flex-1 border border-night-border bg-night-surface px-4 text-left font-semibold" onClick={() => setForm(fromPreset(p))}>{p.name}</button>
               {isAdmin && !fromCache && (
                 <>
-                  <button className="min-h-14 rounded-xl border border-[#2B3A5E] px-3" onClick={() => overwrite(p)} aria-label={`${p.name} mit aktueller Einstellung überschreiben`}>Überschreiben</button>
-                  <button className="min-h-14 rounded-xl border border-[#EF4444] px-3 text-[#FCA5A5]" onClick={() => remove(p)} aria-label={`${p.name} löschen`}>Löschen</button>
+                  <button className="min-h-12 border border-night-border px-3" onClick={() => overwrite(p)} aria-label={`${p.name} mit aktueller Einstellung überschreiben`}>Überschreiben</button>
+                  <button className="min-h-12 border border-night-border px-3" onClick={() => remove(p)} aria-label={`${p.name} löschen`}>Löschen</button>
                 </>
               )}
             </li>
           ))}
         </ul>
         {isAdmin && !fromCache && (
-          <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); void create(); }}>
+          <form className="flex flex-wrap gap-2" onSubmit={(e) => { e.preventDefault(); void create(); }}>
             <input value={name} onChange={(e) => setName(e.target.value)} required maxLength={100} placeholder="Name für neues Preset" aria-label="Preset-Name"
-              className="min-h-14 flex-1 rounded-xl border border-[#2B3A5E] bg-[#0B1220] px-3" />
-            <button className="min-h-14 rounded-xl border border-[#7FA2FF] px-4">Als Preset speichern</button>
+              className="min-h-12 min-w-0 flex-1 border border-night-border bg-night px-3" />
+            <button className="min-h-12 whitespace-nowrap border border-action px-4 font-semibold text-night-label">Als Preset speichern</button>
           </form>
         )}
       </section>

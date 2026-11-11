@@ -1,4 +1,5 @@
 "use client";
+import { Maximize, Pause, Play, RotateCcw, SkipBack, SkipForward } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Beeper } from "@/lib/timer/audio";
 import { type Config, type Kind, type Snapshot, TimerEngine } from "@/lib/timer/engine";
@@ -6,19 +7,21 @@ import { fmt } from "@/lib/timer/fmt";
 import { useWakeLock } from "@/lib/timer/useWakeLock";
 import { AudioControls } from "./AudioControls";
 
-const COLOR = { prep: "#F5B942", work: "#7FA2FF", rest: "#64748B", done: "#7FA2FF" } as const;
+const TEXT = { prep: "text-warn", work: "text-night-label", rest: "text-night-muted", done: "text-night-label" } as const;
+const DOT = { prep: "bg-warn", work: "bg-action", rest: "bg-rest-slate" } as const;
 const LABEL: Record<Kind, string> = { prep: "VORBEREITUNG", work: "ARBEIT", rest: "PAUSE", done: "FERTIG" };
-const BTN = "min-h-14 min-w-14 rounded-xl border border-[#2B3A5E] bg-[#131C33] px-4 text-lg";
+const BTN = "inline-flex min-h-12 min-w-12 items-center justify-center gap-2 border border-night-border bg-night-surface px-4 text-base font-semibold";
+const clock = (s: number) => fmt(s * 1000).replace(/^0/, "");
 
 function Segments({ s }: { s: Snapshot }) {
   if (s.totalRounds < 2) return null;
   return (
-    <div className="flex w-full gap-1" role="img" aria-label={`Runde ${Math.max(1, s.round)} von ${s.totalRounds}`}>
+    <div className="flex w-full gap-1.5" role="img" aria-label={`Runde ${Math.max(1, s.round)} von ${s.totalRounds}`}>
       {Array.from({ length: s.totalRounds }, (_, i) => {
         const r = i + 1;
         const done = s.kind === "done" || r < s.round || (s.kind === "rest" && r === s.round);
         const active = !done && s.kind === "work" && r === s.round;
-        return <span key={r} className="h-3 flex-1 rounded-full" style={{ background: done ? "#2454E0" : active ? "#7FA2FF" : "#2B3A5E" }} />;
+        return <span key={r} className={`h-1.5 flex-1 ${done || active ? "bg-action" : "bg-night-border"}`} />;
       })}
     </div>
   );
@@ -89,48 +92,57 @@ export function Run({ config, beeper, onExit, fsRef }: { config: Config; beeper:
   const kind = snap.kind;
   const label = stopwatch ? "STOPPUHR" : LABEL[kind];
   const pulse = snap.status === "running" && kind === "work" && !stopwatch && snap.remainingMs <= 10_000;
-  const mainLabel = snap.status === "running" ? "Pause" : snap.status === "paused" ? "Fortsetzen" : snap.status === "finished" ? "Neu starten" : "Start";
+  const mainLabel = snap.status === "running" ? "Pause" : snap.status === "paused" ? "Fortsetzen" : snap.status === "finished" ? "Neu starten" : "Starten";
+
+  const phase = stopwatch ? "STOPPUHR" : snap.totalRounds > 1 && kind !== "done" ? `${label} · RUNDE ${Math.max(1, snap.round)} VON ${snap.totalRounds}` : label;
+  const Icon = snap.status === "running" ? Pause : Play;
 
   return (
-    <section className="flex min-h-[calc(100dvh-4.5rem)] flex-col gap-4 p-4" aria-label="Timer">
+    <section className="mx-auto flex min-h-[calc(100dvh-60px)] max-w-5xl flex-col gap-5 px-5 pb-6" aria-label="Timer">
       <p className="sr-only" aria-live="polite">{announce}</p>
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <span className="text-3xl font-bold tracking-wide" style={{ color: COLOR[kind] }}>{label}</span>
-        {snap.totalRounds > 1 && <span className="text-3xl font-semibold">Runde {Math.max(1, snap.round)}/{snap.totalRounds}</span>}
+      <div className="flex items-center gap-2">
+        {kind !== "done" && !stopwatch && <span aria-hidden className={`size-2 ${DOT[kind]}`} />}
+        <span className={`text-[13px] font-semibold uppercase tracking-[0.14em] ${TEXT[kind]}`}>{phase}</span>
       </div>
       <Segments s={snap} />
       <div className="flex flex-1 items-center justify-center">
         <div
-          className={`font-bold leading-none tabular-nums ${pulse ? "timer-last10" : ""}`}
-          style={{ fontSize: "min(44vh, 26vw)", color: pulse ? undefined : "#F4F7FF" }}
+          className={`font-mono font-bold leading-none tabular-nums tracking-[-0.04em] text-[min(30vw,120px)] md:text-[min(44vh,26vw)] ${pulse ? "timer-last10" : "text-night-text"}`}
           aria-hidden
         >
           {fmt(snap.displayMs, !stopwatch)}
         </div>
       </div>
-      {!supported && snap.status === "running" && <p className="text-sm text-[#9FB0D6]">Bildschirm bitte manuell anlassen</p>}
-      <div className="flex flex-wrap items-center gap-2">
-        <button className="min-h-[88px] min-w-48 flex-1 rounded-2xl bg-[#2454E0] text-2xl font-bold text-white" onClick={toggle}>{mainLabel}</button>
-        <button className={BTN} onClick={reset}>Reset</button>
+      {config.mode === "rounds" && (
+        <dl className="grid grid-cols-3 border-y border-night-border text-center">
+          {([["Runden", String(config.rounds)], ["Arbeit", clock(config.work)], ["Pause", clock(config.rest)]] as const).map(([k, v], i) => (
+            <div key={k} className={`py-2 ${i ? "border-l border-night-border" : ""}`}>
+              <dt className="text-xs text-night-muted">{k}</dt>
+              <dd className="font-mono text-lg font-semibold">{v}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      <button className="flex min-h-[72px] w-full items-center justify-center gap-3 bg-action text-[22px] font-bold text-action-ink" onClick={toggle}>
+        <Icon size={24} strokeWidth={1.75} aria-hidden />{mainLabel}
+      </button>
+      <div className="flex flex-wrap gap-2">
+        <button className={BTN} onClick={reset}><RotateCcw size={18} strokeWidth={1.75} aria-hidden />Zurücksetzen</button>
         {!stopwatch && (
           <>
-            <button className={BTN} aria-label="Vorherige Phase" onClick={run(() => engine.skip(-1))}>⏮</button>
-            <button className={BTN} aria-label="Nächste Phase" onClick={run(() => engine.skip(1))}>⏭</button>
+            <button className={BTN} aria-label="Vorherige Phase" onClick={run(() => engine.skip(-1))}><SkipBack size={18} strokeWidth={1.75} aria-hidden /></button>
+            <button className={BTN} aria-label="Nächste Phase" onClick={run(() => engine.skip(1))}><SkipForward size={18} strokeWidth={1.75} aria-hidden /></button>
             <button className={BTN} onClick={run(() => engine.adjust(-10_000))}>−10 s</button>
             <button className={BTN} onClick={run(() => engine.adjust(10_000))}>+10 s</button>
           </>
         )}
-        <button className={BTN} onClick={fullscreen}>Vollbild</button>
+        <button className={BTN} onClick={fullscreen}><Maximize size={18} strokeWidth={1.75} aria-hidden />Vollbild</button>
         <button className={BTN} onClick={onExit}>Einstellungen</button>
       </div>
-      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[#2B3A5E] pt-3 text-sm text-[#9FB0D6]">
+      <footer className="flex flex-col gap-3 border-t border-night-border pt-3 text-xs text-night-muted">
         <AudioControls beeper={beeper} />
-        <span className="flex flex-wrap gap-3">
-          {(["prep", "work", "rest"] as const).map((k) => (
-            <span key={k} className="flex items-center gap-1"><i className="inline-block h-3 w-3 rounded-full" style={{ background: COLOR[k] }} />{LABEL[k]}</span>
-          ))}
-        </span>
-        <span>Leertaste Start/Pause · R Reset · F Vollbild · ←/→ Phase</span>
+        <p>{[supported ? "Bildschirm bleibt an" : "Bildschirm bitte manuell anlassen", beeper.muted ? "Ton aus" : "Ton aktiv"].join(" · ")}</p>
+        <p className="hidden md:block">Leertaste Start/Pause · R Zurücksetzen · F Vollbild · ←/→ Phase</p>
       </footer>
     </section>
   );
