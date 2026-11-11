@@ -1,9 +1,9 @@
 "use client";
-import { AppShell, roleLabel, useCurrentMe } from "@/components/AppShell";
-import { CoverageBanner } from "@/components/CoverageBanner";
-import { MissingNumbers } from "@/components/MissingNumbers";
-import { TodayStrip } from "@/components/TodayStrip";
-import { TileGrid } from "@/components/TileGrid";
+import { AppShell, useCurrentMe } from "@/components/AppShell";
+import { Modules } from "@/components/home/Modules";
+import { Open } from "@/components/home/Open";
+import { Today } from "@/components/home/Today";
+import { TimerRow } from "@/components/home/TimerRow";
 
 const env = {
   plannerUrl: process.env.NEXT_PUBLIC_PRODUCTION_PLANNER_URL,
@@ -13,13 +13,15 @@ const env = {
 function Home() {
   const me = useCurrentMe();
   return (
-    <main className="mx-auto max-w-4xl p-4">
-      <h1 className="text-xl font-semibold">Hallo {me.display_name}</h1>
-      <p className="mb-4 text-sm text-neutral-600">{roleLabel(me)}</p>
-      <CoverageBanner />
-      <MissingNumbers />
-      <TodayStrip />
-      <TileGrid role={me.role} env={env} />
+    <main className="mx-auto flex max-w-[1280px] flex-col gap-8 px-5 py-6 lg:px-12">
+      <div className="grid gap-8 lg:grid-cols-[3fr_2fr]">
+        <Today />
+        <div className="flex flex-col gap-8">
+          <Open />
+          <TimerRow />
+        </div>
+      </div>
+      <Modules role={me.role} env={env} />
     </main>
   );
 }

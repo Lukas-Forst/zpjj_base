@@ -1,11 +1,11 @@
 "use client";
-import { Logo } from "./Logo";
+import { Button, Logo } from "./ui";
 
 function Page({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-4 p-6 text-center">
+    <main className="mx-auto flex min-h-dvh max-w-md flex-col items-start justify-center gap-4 p-5">
       <Logo />
-      <h1 className="text-2xl font-semibold">{title}</h1>
+      <h1 className="text-[28px] font-bold leading-8 tracking-[-0.02em]">{title}</h1>
       {children}
     </main>
   );
@@ -23,9 +23,7 @@ export function Offline() {
   return (
     <Page title="Du bist offline">
       <p>Keine Verbindung zu ZPJJ Base. Der Gym-Timer funktioniert trotzdem, sobald er einmal geladen wurde.</p>
-      <button className="rounded-lg bg-accent px-4 py-3 text-accent-foreground" onClick={() => location.reload()}>
-        Neu laden
-      </button>
+      <Button onClick={() => location.reload()}>Neu laden</Button>
     </Page>
   );
 }

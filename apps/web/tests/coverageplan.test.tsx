@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { gapLabel } from "@/components/CoverageBanner";
+import { gapLabel } from "@/components/home/Open";
 import { CoveragePlan } from "@/components/urlaub/CoveragePlan";
 import type { components } from "@/lib/api/schema";
 

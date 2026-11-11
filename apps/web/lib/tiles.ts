@@ -1,33 +1,17 @@
 export type Role = "gesellschafter" | "trainer";
-export type TileState = "active" | "soon" | "external";
-export type Tile = {
-  id: string;
-  title: string;
-  sub: string;
-  icon: string;
-  state: TileState;
-  href?: string;
-  /** external tile whose env URL is missing -> rendered disabled */
-  disabled: boolean;
-};
+export type ModuleState = "active" | "external";
+export type Module = { id: string; title: string; href: string; state: ModuleState };
+export type ModuleEnv = { plannerUrl?: string; crmUrl?: string };
 
-export type TileEnv = { plannerUrl?: string; crmUrl?: string };
-
-// Order = frequency of use, admin last. Timer is the hero tile (rendered separately).
-export function visibleTiles(role: Role, env: TileEnv): Tile[] {
-  const ext = (id: string, title: string, sub: string, icon: string, url?: string): Tile => ({
-    id, title, sub, icon, state: "external", href: url || undefined, disabled: !url,
-  });
-  const tiles: Tile[] = [
-    { id: "timer", title: "Gym-Timer", sub: "Runden, Countdown, Stoppuhr", icon: "⏱", state: "active", href: "/timer/", disabled: false },
-    { id: "stundenplan", title: "Stundenplan", sub: "Wochenplan mit Trainern", icon: "📅", state: "active", href: "/stundenplan/", disabled: false },
-    { id: "urlaub", title: "Urlaub", sub: "Abwesenheiten und Besetzung", icon: "🏖", state: "active", href: "/urlaub/", disabled: false },
-    { id: "anwesenheit", title: "Anwesenheit", sub: "Zahlen pro Einheit", icon: "👥", state: "active", href: "/anwesenheit/", disabled: false },
-    ext("planer", "Produktionsplaner", "Merch und Produktion", "🏭", env.plannerUrl),
-    ext("crm", "CRM", "Kontakte und Probetrainings", "🗂", env.crmUrl),
+// External modules without a configured URL are left out (no placeholder cells). Admin only for gesellschafter.
+export function visibleModules(role: Role, env: ModuleEnv): Module[] {
+  const m: Module[] = [
+    { id: "stundenplan", title: "Stundenplan", href: "/stundenplan/", state: "active" },
+    { id: "urlaub", title: "Urlaub", href: "/urlaub/", state: "active" },
+    { id: "anwesenheit", title: "Anwesenheit", href: "/anwesenheit/", state: "active" },
   ];
-  if (role === "gesellschafter") {
-    tiles.push({ id: "admin", title: "Admin", sub: "Nutzer verwalten", icon: "⚙", state: "active", href: "/admin/nutzer/", disabled: false });
-  }
-  return tiles;
+  if (env.plannerUrl) m.push({ id: "planer", title: "Produktion", href: env.plannerUrl, state: "external" });
+  if (env.crmUrl) m.push({ id: "crm", title: "CRM", href: env.crmUrl, state: "external" });
+  if (role === "gesellschafter") m.push({ id: "admin", title: "Admin", href: "/admin/nutzer/", state: "active" });
+  return m;
 }
