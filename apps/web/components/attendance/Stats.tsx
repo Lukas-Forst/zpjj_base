@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { SectionHeader } from "@/components/ui";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
 import { WeekdayBars } from "./WeekdayBars";
@@ -25,16 +26,16 @@ export function Stats() {
       <div className="mb-4 flex gap-2">
         {([2, 3] as const).map((m) => (
           <button key={m} type="button" aria-pressed={m === months} onClick={() => setMonths(m)}
-            className={`min-h-11 rounded-lg border px-4 ${m === months ? "border-accent bg-accent text-accent-foreground" : "border-neutral-300"}`}>{m} Monate</button>
+            className={`min-h-11 border px-4 font-semibold ${m === months ? "border-ink bg-ink text-paper" : "border-hairline-strong"}`}>{m} Monate</button>
         ))}
       </div>
-      {err && <p role="alert" className="text-danger">Auswertung konnte nicht geladen werden.</p>}
-      {!stats && !err && <p className="text-sm text-neutral-600 dark:text-neutral-400">Lädt …</p>}
+      {err && <p role="alert" className="border-l-4 border-warn py-1 pl-3 font-semibold">Auswertung konnte nicht geladen werden.</p>}
+      {!stats && !err && <p className="text-sm text-muted-ink">Lädt …</p>}
       {stats && (<>
-        <h2 className="mb-2 font-semibold">Ø Teilnehmer pro Woche</h2>
-        <div className="mb-6"><WeeklyLine weeks={stats.weeks} /></div>
-        <h2 className="mb-2 font-semibold">Ø pro Wochentag</h2>
-        <WeekdayBars data={stats.weekday_avg} />
+        <SectionHeader title="Ø Teilnehmer pro Woche" />
+        <div className="mb-8 mt-3"><WeeklyLine weeks={stats.weeks} /></div>
+        <SectionHeader title="Ø pro Wochentag" />
+        <div className="mt-3"><WeekdayBars data={stats.weekday_avg} /></div>
       </>)}
     </div>
   );

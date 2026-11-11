@@ -5,6 +5,7 @@ import { EntryForm } from "@/components/attendance/EntryForm";
 import { Stats } from "@/components/attendance/Stats";
 import { TrialList } from "@/components/attendance/TrialList";
 import { Tabs } from "@/components/attendance/Tabs";
+import { ListRow, Notice, PageTitle, SectionHeader, FIELD } from "@/components/ui";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
 import { attendanceLine, todayISO } from "@/lib/attendance";
@@ -19,7 +20,6 @@ const TABS = [
   { id: "auswertung", label: "Auswertung" },
   { id: "probetrainings", label: "Probetrainings" },
 ];
-const field = "min-h-11 rounded-lg border border-neutral-300 px-2";
 const dash = (n: number | null) => (n === null ? "–" : n);
 
 function Anwesenheit() {
@@ -48,32 +48,30 @@ function Anwesenheit() {
     : attendanceLine(e.date, e) + (e.total === null ? " · Gesamt –" : "");
 
   return (
-    <main className="mx-auto max-w-3xl p-4">
-      <h1 className="mb-4 text-xl font-semibold">Anwesenheit</h1>
+    <main className="mx-auto max-w-3xl px-5 py-6">
+      <PageTitle>Anwesenheit</PageTitle>
       <Tabs tabs={TABS} active={tab} onChange={setTab} />
-      {err && <p role="alert" className="mb-3 text-danger">{err}</p>}
+      {err && <Notice>{err}</Notice>}
 
       {tab === "eintragen" && (<>
         <section className="mb-6" aria-labelledby="neu">
-          <h2 id="neu" className="mb-2 font-semibold">Eintragen</h2>
+          <h2 id="neu" className="sr-only">Eintragen</h2>
           <label className="mb-3 flex flex-col text-sm">Datum
-            <input type="date" required max={today} className={field} value={date} onChange={(e) => { setErr(""); setDate(e.target.value); }} />
+            <input type="date" required max={today} className={FIELD} value={date} onChange={(e) => { setErr(""); setDate(e.target.value); }} />
           </label>
-          {existing && <p className="mb-3 text-sm text-neutral-600">Schon eingetragen: {line(existing)}</p>}
+          {existing && <p className="mb-3 text-sm text-muted-ink">Schon eingetragen: {line(existing)}</p>}
           {ov && date
             ? <EntryForm key={date} day={date} existing={existing} trials={trials ?? []} onSaved={() => { setErr(""); load().catch(() => setErr("Daten konnten nicht geladen werden.")); }} />
-            : <p className="text-sm text-neutral-600">Lädt …</p>}
+            : <p className="text-sm text-muted-ink">Lädt …</p>}
         </section>
 
         {ov && (
           <section aria-labelledby="ov">
-            <h2 id="ov" className="mb-2 font-semibold">Übersicht</h2>
-            <p className="mb-2 text-sm">Ø letzte 14 Tage: <b>{dash(ov.avg_14d)}</b></p>
+            <div id="ov"><SectionHeader title="Übersicht" /></div>
+            <p className="mb-2 mt-3 text-sm">Ø letzte 14 Tage: <b>{dash(ov.avg_14d)}</b></p>
             <p className="mb-3 text-sm">Ø pro Wochentag: {ov.avg_by_weekday.map((w) => `${WEEKDAYS[w.weekday].slice(0, 2)} ${w.avg ?? "–"}`).join(" · ")}</p>
-            {ov.entries.length === 0 ? <p className="text-sm text-neutral-600">Noch nichts eingetragen.</p> : (
-              <ul className="flex flex-col gap-2">
-                {ov.entries.map((e) => <li key={e.date} className="rounded-xl border border-neutral-200 p-3">{line(e)}</li>)}
-              </ul>
+            {ov.entries.length === 0 ? <p className="text-sm text-muted-ink">Noch nichts eingetragen.</p> : (
+              <div>{ov.entries.map((e) => <ListRow key={e.date}>{line(e)}</ListRow>)}</div>
             )}
           </section>
         )}

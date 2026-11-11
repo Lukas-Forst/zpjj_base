@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
+import { Button, FIELD, OutlineButton } from "@/components/ui";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
 import { sundayTotal } from "@/lib/attendance";
@@ -8,14 +9,12 @@ import { errText } from "@/lib/format";
 type Entry = components["schemas"]["AttendanceOut"];
 type TrialOut = components["schemas"]["TrialOut"];
 
-const field = "min-h-11 rounded-lg border border-neutral-300 px-2";
-const btn = "min-h-11 rounded-lg border border-accent px-4 text-accent disabled:opacity-50";
 const num = (s: string) => (s.trim() === "" ? 0 : Math.max(0, Math.floor(Number(s)) || 0));
 
 function NumField({ label, value, set, required, max }: { label: string; value: string; set: (v: string) => void; required?: boolean; max?: number }) {
   return (
     <label className="flex flex-col text-sm">{label}
-      <input type="number" min={0} max={max} inputMode="numeric" required={required} className={field} value={value} onChange={(e) => set(e.target.value)} />
+      <input type="number" min={0} max={max} inputMode="numeric" required={required} className={FIELD} value={value} onChange={(e) => set(e.target.value)} />
     </label>
   );
 }
@@ -63,14 +62,14 @@ export function EntryForm({ day, existing, trials, onSaved }: { day: string; exi
   const known = trials.filter((t) => t.status === "offen");
   return (
     <form onSubmit={(e) => { e.preventDefault(); save(false); }} className="flex flex-col gap-3">
-      {err && <p role="alert" className="text-danger">{err}</p>}
+      {err && <p role="alert" className="border-l-4 border-warn py-1 pl-3 font-semibold">{err}</p>}
       {sunday
         ? <NumField label="Mitglieder (10:00–11:30)" value={members} set={edit(setMembers)} required />
         : <NumField label="Teilnehmer gesamt" value={total} set={edit(setTotal)} required />}
       <NumField label="Davon Probetraining" value={nTrials} set={edit(setNTrials)} max={30} />
       {Array.from({ length: count }, (_, i) => (
         <label key={i} className="flex flex-col text-sm">Name Probetraining {i + 1}
-          <input list="known-trials" required maxLength={100} autoComplete="off" className={field} value={nameAt(i)}
+          <input list="known-trials" required maxLength={100} autoComplete="off" className={FIELD} value={nameAt(i)}
             onChange={(e) => { setErr(""); setNames((p) => { const n = [...p]; n[i] = e.target.value; return n; }); }} />
         </label>
       ))}
@@ -83,10 +82,8 @@ export function EntryForm({ day, existing, trials, onSaved }: { day: string; exi
         <NumField label="Anfängerkurs (leer = kein Kurs)" value={beginner} set={edit(setBeginner)} />
       </>}
       <div className="flex flex-wrap gap-3">
-        <button type="submit" disabled={busy} className="min-h-11 rounded-lg bg-accent px-4 text-accent-foreground disabled:opacity-50">
-          {existing ? "Ersetzen" : "Speichern"}
-        </button>
-        <button type="button" disabled={busy} className={btn} onClick={() => save(true)}>Ausgefallen</button>
+        <Button type="submit" disabled={busy}>{existing ? "Ersetzen" : "Speichern"}</Button>
+        <OutlineButton disabled={busy} onClick={() => save(true)}>Ausgefallen</OutlineButton>
       </div>
     </form>
   );

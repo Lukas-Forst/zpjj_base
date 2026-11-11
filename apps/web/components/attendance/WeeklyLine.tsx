@@ -26,12 +26,12 @@ export function WeeklyLine({ weeks }: { weeks: WeekPoint[] }) {
   const lastIdx = vals.length - 1 - [...vals].reverse().findIndex((v) => v !== null);
 
   return (
-    <svg role="img" aria-label={label} viewBox={`0 0 ${W} ${H}`} className="w-full text-neutral-900 dark:text-neutral-100">
+    <svg role="img" aria-label={label} viewBox={`0 0 ${W} ${H}`} className="w-full text-ink">
       <line x1={L} x2={W - R} y1={H - B} y2={H - B} stroke="currentColor" strokeOpacity={0.25} />
-      {segs.map((d) => <path key={d} d={d} fill="none" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" className="stroke-blue-600 dark:stroke-blue-400" />)}
+      {segs.map((d) => <path key={d} d={d} fill="none" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" className="stroke-action" />)}
       {vals.map((v, i) => v === null ? null : (
         <g key={weeks[i].week_start}>
-          <circle cx={x(i)} cy={y(v)} r={3.5} strokeWidth={2} className="fill-blue-600 stroke-white dark:fill-blue-400 dark:stroke-neutral-900" />
+          <circle cx={x(i)} cy={y(v)} r={3.5} strokeWidth={2} className="fill-action stroke-paper" />
           <text x={x(i)} y={y(v) - 8} textAnchor="middle" fontSize={i === lastIdx ? 12 : 9} fontWeight={i === lastIdx ? 700 : 400} fill="currentColor">{num(v)}</text>
         </g>
       ))}
